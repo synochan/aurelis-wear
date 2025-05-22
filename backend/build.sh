@@ -44,8 +44,27 @@ EOL
     pip install -r requirements.txt
 fi
 
+# Make sure project directory is in Python path
+export PYTHONPATH="$PYTHONPATH:$(pwd):$(pwd)/backend"
+echo "PYTHONPATH set to: $PYTHONPATH"
+
+# Check if we're in the right directory for Django commands
+if [ -f "manage.py" ]; then
+    echo "Found manage.py in current directory"
+    DJANGO_DIR="."
+elif [ -f "backend/manage.py" ]; then
+    echo "Found manage.py in backend/ directory"
+    DJANGO_DIR="backend"
+    cd backend
+else
+    echo "Could not find manage.py!"
+    exit 1
+fi
+
+echo "Running Django commands from $(pwd)"
+
 # Run migrations
 python manage.py migrate
 
 # Collect static files
-python manage.py collectstatic --noinput 
+python manage.py collectstatic --noinput

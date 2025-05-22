@@ -2,10 +2,11 @@ services:
   - type: web
     name: aurelis-wear-shop-backend
     runtime: python
+    pythonVersion: 3.11.11
     rootDirectory: .
     plan: free
     buildCommand: chmod +x setup_render.sh && ./setup_render.sh && chmod +x build.sh && ./build.sh
-    startCommand: gunicorn wsgi:application
+    startCommand: cd /opt/render/project/src && gunicorn --chdir backend wsgi:application
     envVars:
       - key: DEBUG
         value: false
@@ -23,6 +24,8 @@ services:
         sync: false
       - key: FRONTEND_URL
         value: "https://aurelis-wear-shop.vercel.app"
+      - key: PYTHONPATH
+        value: "/opt/render/project/src:/opt/render/project/src/backend"
 
 databases:
   - name: aurelis-wear-db

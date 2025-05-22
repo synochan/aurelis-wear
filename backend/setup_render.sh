@@ -66,10 +66,49 @@ for file in wsgi.py settings.py urls.py manage.py; do
     fi
 done
 
+# Make sure we can find products and other Django app modules
+echo "Setting up Python module structure..."
+
+# Create symbolic links for essential Django app directories
+if [ -d "backend/products" ] && [ ! -d "products" ]; then
+    echo "Creating symbolic link for products module"
+    ln -sf "$(pwd)/backend/products" "$(pwd)/products"
+fi
+
+if [ -d "backend/orders" ] && [ ! -d "orders" ]; then
+    echo "Creating symbolic link for orders module"
+    ln -sf "$(pwd)/backend/orders" "$(pwd)/orders"
+fi
+
+if [ -d "backend/cart" ] && [ ! -d "cart" ]; then
+    echo "Creating symbolic link for cart module"
+    ln -sf "$(pwd)/backend/cart" "$(pwd)/cart"
+fi
+
+if [ -d "backend/authentication" ] && [ ! -d "authentication" ]; then
+    echo "Creating symbolic link for authentication module"
+    ln -sf "$(pwd)/backend/authentication" "$(pwd)/authentication"
+fi
+
+if [ -d "backend/payments" ] && [ ! -d "payments" ]; then
+    echo "Creating symbolic link for payments module"
+    ln -sf "$(pwd)/backend/payments" "$(pwd)/payments"
+fi
+
+# Create an empty __init__.py if it doesn't exist to make the directory a Python package
+touch __init__.py
+
 # Make sure we have proper permissions
 chmod +x build.sh
+if [ -f "diagnose.py" ]; then
+    chmod +x diagnose.py
+fi
+
 if [ -f "manage.py" ]; then
     chmod +x manage.py
 fi
+
+echo "Showing final directory structure:"
+ls -la
 
 echo "===== Setup completed =====" 
