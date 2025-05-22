@@ -22,6 +22,7 @@ from rest_framework.routers import DefaultRouter
 from products.views import ProductViewSet, FeaturedProductsView, CategoryViewSet
 from authentication.views import RegisterView, LoginView, UserView
 from cart.views import CartViewSet, CartItemViewSet
+from orders.views import OrderViewSet  # Import OrderViewSet
 
 # Create a router for viewsets
 router = DefaultRouter()
@@ -29,6 +30,7 @@ router.register(r'products', ProductViewSet, basename='product')
 router.register(r'categories', CategoryViewSet, basename='category')
 router.register(r'cart', CartViewSet, basename='cart')
 router.register(r'cart/items', CartItemViewSet, basename='cart-item')
+router.register(r'orders', OrderViewSet, basename='order')  # Register orders endpoint
 
 # Define URL patterns
 urlpatterns = [
@@ -39,6 +41,7 @@ urlpatterns = [
         path('auth/register/', RegisterView.as_view(), name='register'),
         path('auth/login/', LoginView.as_view(), name='login'),
         path('auth/user/', UserView.as_view(), name='user-profile'),
+        path('payments/', include('payments.urls')),  # Include payment URLs
     ])),
 ]
 

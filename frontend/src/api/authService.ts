@@ -1,4 +1,4 @@
-import { apiConfig, handleApiResponse, withAuth } from './config';
+import api from './config';
 
 export interface LoginCredentials {
   email: string;
@@ -30,20 +30,16 @@ export const authService = {
     // Login user
     login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
       try {
-        const response = await fetch(`${apiConfig.baseURL}/api/auth/login/`, {
-          method: 'POST',
-          headers: apiConfig.headers,
-          body: JSON.stringify({
-            email: credentials.email,
-            password: credentials.password
-          })
+        const response = await api.post('/auth/login/', {
+          email: credentials.email,
+          password: credentials.password
         });
         
-        const data = await handleApiResponse(response);
+        const data = response.data;
         
         // Store auth token in localStorage for subsequent requests
         if (data.token) {
-          localStorage.setItem('authToken', data.token);
+          localStorage.setItem('token', data.token);
           // Also store user in memory
           currentUser = data.user;
         }
@@ -51,7 +47,7 @@ export const authService = {
         return data;
       } catch (error) {
         // Clear any partial auth data on error
-        localStorage.removeItem('authToken');
+        localStorage.removeItem('token');
         currentUser = null;
         throw error;
       }
@@ -63,24 +59,20 @@ export const authService = {
         // Generate username from email (use part before @)
         const username = userData.email.split('@')[0];
         
-        const response = await fetch(`${apiConfig.baseURL}/api/auth/register/`, {
-          method: 'POST',
-          headers: apiConfig.headers,
-          body: JSON.stringify({
-            username: username,
-            email: userData.email,
-            password: userData.password,
-            password2: userData.password, // Confirm password is required
-            first_name: userData.firstName,
-            last_name: userData.lastName
-          })
+        const response = await api.post('/auth/register/', {
+          username: username,
+          email: userData.email,
+          password: userData.password,
+          password2: userData.password, // Confirm password is required
+          first_name: userData.firstName,
+          last_name: userData.lastName
         });
         
-        const data = await handleApiResponse(response);
+        const data = response.data;
         
         // Store auth token in localStorage for subsequent requests
         if (data.token) {
-          localStorage.setItem('authToken', data.token);
+          localStorage.setItem('token', data.token);
           // Also store user in memory
           currentUser = data.user;
         }
@@ -88,7 +80,7 @@ export const authService = {
         return data;
       } catch (error) {
         // Clear any partial auth data on error
-        localStorage.removeItem('authToken');
+        localStorage.removeItem('token');
         currentUser = null;
         throw error;
       }
@@ -97,13 +89,13 @@ export const authService = {
     // Logout user (client-side only)
     logout: () => {
       // Clear local storage and memory cache
-      localStorage.removeItem('authToken');
+      localStorage.removeItem('token');
       currentUser = null;
     },
   
     // Check if user is authenticated
     isAuthenticated: () => {
-      return !!localStorage.getItem('authToken');
+      return !!localStorage.getItem('token');
     },
   
     // Get current user's profile
@@ -112,23 +104,14 @@ export const authService = {
       if (currentUser) return currentUser;
       
       // If no token, don't even try to fetch
-      if (!localStorage.getItem('authToken')) {
+      if (!localStorage.getItem('token')) {
         throw new Error('Not authenticated');
       }
       
       try {
-        const response = await fetch(`${apiConfig.baseURL}/api/auth/user/`, {
-          method: 'GET',
-          headers: withAuth(apiConfig.headers)
-        });
+        const response = await api.get('/auth/user/');
         
-        if (response.status === 401) {
-          // Token is invalid, clear it
-          authService.logout();
-          throw new Error('Authentication token expired or invalid');
-        }
-        
-        const data = await handleApiResponse(response);
+        const data = response.data;
         // Cache the user data
         currentUser = data;
         return data;
@@ -153,27 +136,13 @@ export const authService = {
           throw new Error('Not authenticated');
         }
         
-        const response = await fetch(`${apiConfig.baseURL}/api/auth/user/`, {
-          method: 'PATCH',
-          headers: withAuth(apiConfig.headers),
-          body: JSON.stringify(profileData)
-        });
+        const response = await api.patch('/auth/user/', profileData);
         
-        if (response.status === 401) {
-          // Token is invalid, clear it
-          authService.logout();
-          throw new Error('Authentication token expired or invalid');
-        }
-        
-        const data = await handleApiResponse(response);
+        const data = response.data;
         // Update the cached user data
         currentUser = data;
         return data;
       } catch (error) {
-        // On error with auth, clear token
-        if (error instanceof Response && error.status === 401) {
-          authService.logout();
-        }
         throw error;
       }
     }

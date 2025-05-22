@@ -27,7 +27,7 @@ apiClient.interceptors.request.use(
     console.debug(`API Request: ${config.method?.toUpperCase()} ${config.url}`, 
       config.params || {}, config.data || {});
     
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     if (token) {
       config.headers['Authorization'] = `Token ${token}`;
     }
@@ -50,7 +50,7 @@ apiClient.interceptors.response.use(
     // Handle authentication errors
     if (error.response?.status === 401) {
       // Clear token on authentication errors
-      localStorage.removeItem('authToken');
+      localStorage.removeItem('token');
       console.warn('Authentication token expired or invalid');
       // We could redirect to login here if needed
     }

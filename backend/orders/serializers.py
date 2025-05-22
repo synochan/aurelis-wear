@@ -47,29 +47,47 @@ class OrderSerializer(serializers.ModelSerializer):
         
         # Calculate the total price of all items in the cart
         items_total = sum(item.subtotal for item in cart.items.all())
-        shipping_price = validated_data.get('shipping_price', 0)
-        total_price = items_total + shipping_price
+        
+        # Make a safe copy of validated_data to avoid modifying the original
+        cleaned_data = validated_data.copy()
+        
+        # Extract shipping_price from validated_data to avoid passing it twice
+        shipping_price = cleaned_data.pop('shipping_price', 0)
+        
+        # Remove any fields that we'll set explicitly to avoid duplication errors
+        # These are fields we might pass from frontend but also set explicitly in code
+        for field in ['user', 'items']:
+            if field in cleaned_data:
+                cleaned_data.pop(field)
+        
+        # If total_price is not provided, calculate it
+        if 'total_price' not in cleaned_data:
+            cleaned_data['total_price'] = items_total + shipping_price
         
         # Create the order
-        order = Order.objects.create(
-            user=user,
-            total_price=total_price,
-            shipping_price=shipping_price,
-            **validated_data
-        )
-        
-        # Create order items from cart items
-        for cart_item in cart.items.all():
-            OrderItem.objects.create(
-                order=order,
-                product=cart_item.product,
-                color=cart_item.color,
-                size=cart_item.size,
-                quantity=cart_item.quantity,
-                price=cart_item.product.price
+        try:
+            order = Order.objects.create(
+                user=user,
+                shipping_price=shipping_price,
+                **cleaned_data
             )
-        
-        # Clear the cart
-        cart.items.all().delete()
-        
-        return order 
+            
+            # Create order items from cart items
+            for cart_item in cart.items.all():
+                OrderItem.objects.create(
+                    order=order,
+                    product=cart_item.product,
+                    color=cart_item.color,
+                    size=cart_item.size,
+                    quantity=cart_item.quantity,
+                    price=cart_item.product.price
+                )
+            
+            # Clear the cart
+            cart.items.all().delete()
+            
+            return order
+        except Exception as e:
+            print(f"Error creating order: {e}")
+            print(f"Validated data: {cleaned_data}")
+            raise serializers.ValidationError(f"Failed to create order: {str(e)}") 

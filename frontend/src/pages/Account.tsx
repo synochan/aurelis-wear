@@ -116,7 +116,7 @@ const Account = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Token ${localStorage.getItem('authToken')}`,
+          'Authorization': `Token ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
           current_password: data.currentPassword,

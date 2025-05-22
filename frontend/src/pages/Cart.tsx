@@ -46,7 +46,7 @@ const Cart = () => {
         <div className="lg:col-span-2">
           <div className="bg-white rounded-lg border">
             {cart.map((item) => (
-              <div key={`${item.productId}-${item.color}-${item.size}`}>
+              <div key={item.id || `item-${Date.now()}-${Math.random()}`}>
                 <div className="p-4 sm:p-6 flex flex-col sm:flex-row items-start gap-4">
                   {/* Product Image */}
                   <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gray-100 rounded-md overflow-hidden">
@@ -142,8 +142,8 @@ const Cart = () => {
               </div>
             </div>
             
-            <Button size="lg" className="w-full bg-black hover:bg-gray-800 text-white">
-              Proceed to Checkout
+            <Button size="lg" className="w-full bg-black hover:bg-gray-800 text-white" asChild>
+              <Link to="/checkout">Proceed to Checkout</Link>
             </Button>
             
             <div className="mt-6 space-y-4">

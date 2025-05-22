@@ -1,75 +1,109 @@
-// Configuration for API calls to Django backend
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+import axios from 'axios';
 
+// Determine base URL based on environment
+const getBaseUrl = () => {
+  if (import.meta.env.PROD) {
+    return window.location.origin;
+  }
+  return import.meta.env.VITE_API_URL || 'http://localhost:8000';
+};
+
+// Create base config for API calls
 export const apiConfig = {
-  baseURL: API_URL,
+  baseURL: getBaseUrl(),
   headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Content-Type': 'application/json'
   }
 };
 
-// Helper function to format detailed error messages from Django's response format
-const formatErrorMessage = (errorData: any): string => {
-  if (!errorData) return 'Unknown error occurred';
-  
-  // Check if it's a Django detailed error object
-  if (typeof errorData === 'object') {
-    // Handle field-specific errors
-    const errorMessages: string[] = [];
-    
-    Object.entries(errorData).forEach(([key, value]) => {
-      if (Array.isArray(value)) {
-        errorMessages.push(`${key}: ${value.join(', ')}`);
-      } else if (typeof value === 'string') {
-        errorMessages.push(`${key}: ${value}`);
-      }
-    });
-    
-    if (errorMessages.length > 0) {
-      return errorMessages.join('; ');
-    }
-    
-    // Handle non-field errors or detail message
-    if (errorData.non_field_errors) {
-      return errorData.non_field_errors.join(', ');
-    }
-    
-    if (errorData.detail) {
-      return errorData.detail;
-    }
-    
-    // If we can't extract a structured error, convert the object to a string
-    return JSON.stringify(errorData);
+// Helper function for auth headers
+export const withAuth = (headers = {}) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    return {
+      ...headers,
+      'Authorization': `Token ${token}`
+    };
   }
-  
-  // If it's already a string message
-  if (typeof errorData === 'string') {
-    return errorData;
-  }
-  
-  return 'Unknown error format';
+  return headers;
 };
 
-// Helper function to handle API responses
+// Helper to handle API responses
 export const handleApiResponse = async (response: Response) => {
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    const errorMessage = formatErrorMessage(errorData);
-    throw new Error(errorMessage || `API Error: ${response.status}`);
+    // For 401 errors, handle authentication issues
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+    }
+    
+    // Try to get error details from response
+    let errorData;
+    try {
+      errorData = await response.json();
+    } catch (e) {
+      throw new Error(response.statusText);
+    }
+    
+    // Throw error with message from API if available
+    if (errorData && errorData.detail) {
+      throw new Error(errorData.detail);
+    }
+    throw new Error(response.statusText);
   }
   
   return response.json();
 };
 
-// Helper function to get auth token (to be implemented with auth logic)
-export const getAuthToken = () => {
-  return localStorage.getItem('authToken') || '';
-};
+// Create axios instance with base configuration
+const api = axios.create({
+  baseURL: `${getBaseUrl()}/api`,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
-// Add auth headers to requests that need authentication
-export const withAuth = (headers = {}) => {
-  const token = getAuthToken();
-  // Django REST Framework expects the format "Token xxxxxxx" not "Bearer xxxxxxx"
-  return token ? { ...headers, 'Authorization': `Token ${token}` } : headers;
-};
+// Add request interceptor for authentication
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Token ${token}`;
+    }
+    
+    // Debug logging
+    console.log(`🚀 Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, config.data);
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Add response interceptor for error handling
+api.interceptors.response.use(
+  (response) => {
+    console.log(`✅ Response from ${response.config.url}:`, response.status);
+    return response;
+  },
+  (error) => {
+    // Handle 401 errors (unauthorized)
+    if (error.response && error.response.status === 401) {
+      // Clear local storage and redirect to login
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    
+    // Error logging
+    if (error.response) {
+      console.error(`❌ Error ${error.response.status} from ${error.config.url}:`, 
+                   error.response.data);
+    } else if (error.request) {
+      console.error('❌ No response received:', error.request);
+    } else {
+      console.error('❌ Request failed:', error.message);
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
+export default api;

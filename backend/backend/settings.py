@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'authentication',
     'cart',
     'orders',  # New app for checkout/orders
+    'payments',  # Payment processing app
 ]
 
 MIDDLEWARE = [
@@ -167,3 +168,8 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
 }
+
+# Stripe Configuration
+STRIPE_PUBLISHABLE_KEY = 'pk_test_51RR7hKIpgBdnHFG6JfhpaqYmT7KHZEcFgUg1ioQ7I566adwBNJUp1viv9H4xBXhhHMKsDOYEi0hRdZ1gcGVfjDrQ00goLpu7Lo'
+STRIPE_SECRET_KEY = 'sk_test_51RR7hKIpgBdnHFG6PsqJnuiElggf08jIO40PBwdGbr7V4PcKuz7xmSPutvjarlLhuTxkFeLXj69bEWuT9O4oC2rk00B003gXeC'
+STRIPE_WEBHOOK_SECRET = ''  # You can add this later if you decide to use webhooks
