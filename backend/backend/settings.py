@@ -30,7 +30,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure--6e%hb+_k11v!@n(-!u-r
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS','https://aurelis-wear-1.vercel.app','aurelis-wear-1.onrender.com','localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.environ.get(
+    'ALLOWED_HOSTS',
+    'aurelis-wear.vercel.app,aurelis-wear-1.onrender.com,localhost,127.0.0.1'
+).split(',')
 
 
 # Application definition
