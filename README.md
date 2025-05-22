@@ -1,73 +1,136 @@
-# Welcome to your Lovable project
+# Aurelis Wear Shop
 
-## Project info
+An e-commerce platform for fashion products built with React (frontend) and Django (backend).
 
-**URL**: https://lovable.dev/projects/629d4ebf-1baa-42b0-a9fc-cbc373474104
+## Features
 
-## How can I edit this code?
+- User authentication
+- Product browsing with filtering by category
+- Product detail views
+- Shopping cart functionality
+- Order management
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+### Frontend
+- React with TypeScript
+- React Router for navigation
+- Tailwind CSS for styling
+- Shadcn UI components
+- React Query for data fetching
+- Axios for API calls
+- Vite for fast development and building
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/629d4ebf-1baa-42b0-a9fc-cbc373474104) and start prompting.
+### Backend
+- Django for the API
+- Django REST Framework
+- PostgreSQL database
+- Token-based authentication
 
-Changes made via Lovable will be committed automatically to this repo.
+## Getting Started
 
-**Use your preferred IDE**
+### Prerequisites
+- Node.js (v14+)
+- Python (v3.8+)
+- PostgreSQL
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/aurelis-wear-shop.git
+cd aurelis-wear-shop
+```
 
-Follow these steps:
+2. Set up the backend:
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser  # Create an admin user
+```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+3. Set up the frontend:
+```bash
+cd frontend
+npm install
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+4. Create environment files:
+   - In the frontend directory, create `.env.local`:
+   ```
+   VITE_API_URL=http://localhost:8000
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+   - In the backend directory, create `.env`:
+   ```
+   DEBUG=True
+   SECRET_KEY=your-secret-key
+   DATABASE_URL=postgres://user:password@localhost:5432/aurelis
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### Running the Application
+
+#### Using Root Script (Recommended)
+From the root directory, you can run both frontend and backend concurrently:
+```bash
+npm install  # Install root dependencies (one-time)
+npm run dev  # Start both frontend and backend
+```
+
+#### Running Separately
+1. Start the backend:
+```bash
+cd backend
+python manage.py runserver
+```
+
+2. Start the frontend:
+```bash
+cd frontend
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+3. Access the application:
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:8000/api/
+   - Admin interface: http://localhost:8000/admin/
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## API Endpoints
 
-**Use GitHub Codespaces**
+- `GET /api/products/` - List all products
+- `GET /api/products/{id}/` - Get product details
+- `GET /api/products/?is_featured=true` - Get featured products
+- `GET /api/products/?category=men` - Filter products by category
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- `GET /api/cart/` - Get current user's cart
+- `POST /api/cart/items/` - Add item to cart
+- `PATCH /api/cart/items/{id}/` - Update cart item
+- `DELETE /api/cart/items/{id}/` - Remove cart item
+- `POST /api/cart/clear/` - Clear cart
 
-## What technologies are used for this project?
+## Troubleshooting
 
-This project is built with:
+### Common Issues
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+1. **Network Error when accessing API**:
+   - Ensure the backend server is running
+   - Check that the API URL in `.env.local` matches your backend server address
 
-## How can I deploy this project?
+2. **Authentication Issues**:
+   - Verify your token is valid
+   - Check your login credentials
 
-Simply open [Lovable](https://lovable.dev/projects/629d4ebf-1baa-42b0-a9fc-cbc373474104) and click on Share -> Publish.
+3. **Database Connection Issues**:
+   - Verify PostgreSQL is running
+   - Check database credentials in your environment variables
 
-## Can I connect a custom domain to my Lovable project?
+4. **Missing dev script error**:
+   - Run commands from the correct directory
+   - Make sure you've installed dependencies with `npm install`
 
-Yes, you can!
+## License
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+This project is licensed under the MIT License - see the LICENSE file for details. 
