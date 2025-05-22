@@ -2,8 +2,9 @@ services:
   - type: web
     name: aurelis-wear-shop-backend
     runtime: python
+    rootDirectory: .
     plan: free
-    buildCommand: chmod +x build.sh && ./build.sh
+    buildCommand: chmod +x setup_render.sh && ./setup_render.sh && chmod +x build.sh && ./build.sh
     startCommand: gunicorn wsgi:application
     envVars:
       - key: DEBUG
