@@ -3,8 +3,8 @@ services:
     name: aurelis-wear-shop-backend
     runtime: python
     plan: free
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
-    startCommand: gunicorn config.wsgi:application
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: gunicorn wsgi:application
     envVars:
       - key: DEBUG
         value: false

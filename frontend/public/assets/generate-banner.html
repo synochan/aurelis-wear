@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Generate Banner for Aurelis Wear Shop</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      padding: 20px;
+    }
+    canvas {
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+    }
+    .buttons {
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      padding: 10px 15px;
+      background-color: #0066ff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    p {
+      max-width: 600px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Aurelis Wear Shop Banner Generator</h1>
+  <canvas id="banner" width="1200" height="630"></canvas>
+  <div class="buttons">
+    <button onclick="downloadBanner()">Download Banner</button>
+  </div>
+  <p>
+    This tool generates a 1200×630 banner image suitable for social media sharing.
+    After downloading, place the banner.jpg file in the /public/assets/ directory.
+  </p>
+
+  <script>
+    const canvas = document.getElementById('banner');
+    const ctx = canvas.getContext('2d');
+
+    // Create a gradient background
+    const gradient = ctx.createLinearGradient(0, 0, 0, 630);
+    gradient.addColorStop(0, '#0a0a0a');
+    gradient.addColorStop(1, '#141414');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 1200, 630);
+
+    // Add logo text
+    ctx.font = 'bold 80px Arial';
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.fillText('AURELIS', 600, 250);
+
+    // Add tagline
+    ctx.font = 'bold 48px Arial';
+    ctx.fillStyle = '#0066ff';
+    ctx.fillText('ELEVATE YOUR STYLE', 600, 330);
+
+    // Add subtext
+    ctx.font = '28px Arial';
+    ctx.fillStyle = '#aaaaaa';
+    ctx.fillText('Premium Fashion Clothing', 600, 400);
+
+    // Add blue accent line
+    ctx.fillStyle = '#0066ff';
+    ctx.fillRect(300, 450, 600, 4);
+
+    function downloadBanner() {
+      const link = document.createElement('a');
+      link.download = 'banner.jpg';
+      link.href = canvas.toDataURL('image/jpeg', 0.9);
+      link.click();
+    }
+  </script>
+</body>
+</html> 
