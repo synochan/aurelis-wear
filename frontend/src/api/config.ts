@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Determine base URL based on environment
 const getBaseUrl = () => {
-  // In production on Vercel, use the same domain
+  // In production on Vercel, use the same domain without /api prefix
   if (import.meta.env.PROD) {
     return window.location.origin;
   }

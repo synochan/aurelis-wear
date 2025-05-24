@@ -3,7 +3,7 @@ import axios from 'axios';
 // Get the API URL with fallback
 const getApiUrl = () => {
   try {
-    // In production on Vercel, use the same domain
+    // In production on Vercel, use the same domain without /api prefix
     if (import.meta.env.PROD) {
       return window.location.origin;
     }

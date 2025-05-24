@@ -11,6 +11,7 @@ from products.views import ProductViewSet, FeaturedProductsView, CategoryViewSet
 from authentication.views import RegisterView, LoginView, UserView, LogoutView, ChangePasswordView
 from cart.views import CartViewSet, CartItemViewSet
 from orders.views import OrderViewSet
+from payments.views import StripeConfigView, CreatePaymentIntentView, PaymentConfirmationView
 
 # Health check view
 def health_check(request):
@@ -27,7 +28,7 @@ router = DefaultRouter()
 router.register(r'products', ProductViewSet, basename='product')
 router.register(r'categories', CategoryViewSet, basename='category')
 router.register(r'cart', CartViewSet, basename='cart')
-router.register(r'cart/items', CartItemViewSet, basename='cart-item')
+router.register(r'cart-items', CartItemViewSet, basename='cart-item')
 router.register(r'orders', OrderViewSet, basename='order')
 
 urlpatterns = [
@@ -42,6 +43,9 @@ urlpatterns = [
         path('auth/user/', UserView.as_view(), name='user-profile'),
         path('auth/password/change/', ChangePasswordView.as_view(), name='password-change'),
         path('checkout/', OrderViewSet.as_view({'post': 'checkout'}), name='checkout'),
+        path('payments/config/', StripeConfigView.as_view(), name='stripe-config'),
+        path('payments/create-payment-intent/', CreatePaymentIntentView.as_view(), name='create-payment-intent'),
+        path('payments/confirm-payment/', PaymentConfirmationView.as_view(), name='confirm-payment'),
     ])),
 ]
 

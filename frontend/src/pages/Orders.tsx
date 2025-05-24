@@ -7,6 +7,7 @@ import { Loader2, ChevronRight, ShoppingBag } from 'lucide-react';
 import { useCurrentUser } from '@/api/hooks';
 import api from '@/api/config';
 import { formatDistanceToNow } from 'date-fns';
+import { toast } from '@/components/ui/use-toast';
 
 interface Order {
   id: number;
@@ -31,10 +32,15 @@ const Orders = () => {
     const fetchOrders = async () => {
       try {
         setIsLoading(true);
-        const response = await api.get('api/orders/');
+        const response = await api.get('/api/orders/');
         setOrders(response.data);
-      } catch (err) {
-        setError('Failed to fetch orders');
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load your orders. Please try again.',
+          variant: 'destructive',
+        });
       } finally {
         setIsLoading(false);
       }

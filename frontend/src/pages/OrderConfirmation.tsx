@@ -13,12 +13,13 @@ const OrderConfirmation = () => {
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
+      setLoading(true);
       try {
         const response = await api.get(`api/orders/${orderId}/`);
         setOrderDetails(response.data);
-      } catch (err: any) {
-        console.error('Failed to fetch order details:', err);
-        setError(err.response?.data?.error || 'Failed to fetch order details');
+      } catch (error) {
+        console.error('Error fetching order details:', error);
+        setError('Failed to load order details');
       } finally {
         setLoading(false);
       }

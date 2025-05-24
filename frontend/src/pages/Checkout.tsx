@@ -39,12 +39,13 @@ const Checkout = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [savedShippingInfo, setSavedShippingInfo] = useState<SavedShippingInfo | null>(null);
+  const [stripeConfig, setStripeConfig] = useState<any>(null);
 
   // Initialize Stripe with the publishable key
   useEffect(() => {
     const initializeStripe = async () => {
       try {
-        const response = await api.get('api/payments/config/');
+        const response = await api.get('/api/payments/config/');
         const publishableKey = response.data.publishableKey;
         
         if (!stripePromise && publishableKey) {
@@ -101,90 +102,66 @@ const Checkout = () => {
     return Math.round((subtotal + tax + shippingFee) * 100) / 100;
   };
 
-  // Create an order from the cart
-  const createOrder = async (shippingInfo: any) => {
-    setIsProcessing(true);
-    
+  // Get Stripe configuration
+  const fetchStripeConfig = async () => {
     try {
-      // Save shipping info for future use
-      localStorage.setItem(SHIPPING_INFO_STORAGE_KEY, JSON.stringify(shippingInfo));
-      
-      // Format shipping address as text
-      const formattedShippingAddress = `
-${shippingInfo.firstName} ${shippingInfo.lastName}
-${shippingInfo.address}
-${shippingInfo.city}, ${shippingInfo.state} ${shippingInfo.zipCode}
-${shippingInfo.country}
-Phone: ${shippingInfo.phone}
-      `.trim();
-      
-      // Calculate the total price (this should match what's displayed in OrderSummary)
-      const totalPrice = calculateTotal();
-      
-      // Call the API to create an order
-      const orderData = {
-        payment_method: 'credit_card',
-        shipping_address: formattedShippingAddress,
-        billing_address: formattedShippingAddress,
-        status: 'pending',
-        payment_status: false,
-        total_price: totalPrice,
-      };
-      
-      const response = await api.post('api/orders/', orderData);
-      
-      setOrderId(response.data.id);
-      setShippingDetails(shippingInfo);
-      setStep('payment');
-      
-      // Create a payment intent
-      const paymentResponse = await api.post('api/payments/create-payment-intent/', {
-        order_id: response.data.id,
+      const response = await api.get('/api/payments/config/');
+      setStripeConfig(response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching Stripe config:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load payment configuration',
+        variant: 'destructive',
       });
-      
-      setClientSecret(paymentResponse.data.clientSecret);
+      return null;
+    }
+  };
+
+  // Create order in the backend
+  const createOrder = async (orderData: any) => {
+    try {
+      const response = await api.post('/api/orders/', orderData);
+      return response.data;
     } catch (error: any) {
       console.error('Error creating order:', error);
       
-      let errorMessage = 'Failed to create your order. Please try again.';
-      
-      if (error.response) {
-        console.error('Error response:', error.response.data);
+      // Handle specific error messages from the API
+      if (error.response && error.response.data) {
+        const errorData = error.response.data;
         
-        // Handle different types of validation errors
-        if (error.response.data?.detail) {
-          errorMessage = error.response.data.detail;
-        } else if (error.response.data?.non_field_errors) {
-          errorMessage = error.response.data.non_field_errors.join(', ');
-        } else if (typeof error.response.data === 'string') {
-          // For HTML error responses (like 500 errors), extract error message if possible
-          if (error.response.data.includes('exception_value')) {
-            const errorMatch = error.response.data.match(/<pre class="exception_value">(.*?)<\/pre>/);
-            if (errorMatch && errorMatch[1]) {
-              errorMessage = `Server error: ${errorMatch[1]}`;
-            } else {
-              errorMessage = 'A server error occurred. Please try again.';
-            }
-          } else {
-            errorMessage = error.response.data;
-          }
-        } else if (Object.keys(error.response.data || {}).length > 0) {
-          // Format field errors
-          const fieldErrors = Object.entries(error.response.data)
-            .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`)
+        // Check if there are field-specific errors
+        if (typeof errorData === 'object') {
+          // Format field-specific errors
+          const errorMessages = Object.entries(errorData)
+            .map(([field, errors]) => {
+              if (Array.isArray(errors)) {
+                return `${field}: ${errors.join(', ')}`;
+              }
+              return `${field}: ${errors}`;
+            })
             .join('; ');
           
-          errorMessage = `Validation failed: ${fieldErrors}`;
+          throw new Error(`Order validation failed: ${errorMessages}`);
         }
       }
       
-      toast({
-        title: 'Order Creation Failed',
-        description: errorMessage,
-        variant: 'destructive',
+      throw new Error('Failed to create order. Please try again.');
+    }
+  };
+
+  // Create payment intent
+  const createPaymentIntent = async (orderId: number, amount: number) => {
+    try {
+      const paymentResponse = await api.post('/api/payments/create-payment-intent/', {
+        order_id: orderId,
+        amount: amount
       });
-    } finally {
-      setIsProcessing(false);
+      return paymentResponse.data;
+    } catch (error) {
+      console.error('Error creating payment intent:', error);
+      throw new Error('Failed to initialize payment');
     }
   };
 
@@ -206,6 +183,61 @@ Phone: ${shippingInfo.phone}
       description: error || 'There was an issue processing your payment. Please try again.',
       variant: 'destructive',
     });
+  };
+
+  const handleShippingSubmit = async (shippingData: any) => {
+    setIsProcessing(true);
+    try {
+      // Save shipping info for future use
+      localStorage.setItem(SHIPPING_INFO_STORAGE_KEY, JSON.stringify(shippingData));
+      
+      // Format shipping address as text
+      const formattedShippingAddress = `
+${shippingData.firstName} ${shippingData.lastName}
+${shippingData.address}
+${shippingData.city}, ${shippingData.state} ${shippingData.zipCode}
+${shippingData.country}
+Phone: ${shippingData.phone}
+Email: ${shippingData.email}
+      `.trim();
+      
+      // Calculate the total price
+      const totalPrice = calculateTotal();
+      
+      // Create order data object with required fields
+      const orderData = {
+        payment_method: 'credit_card',
+        shipping_address: formattedShippingAddress,
+        billing_address: formattedShippingAddress, // Use same address for billing
+        status: 'pending',
+        payment_status: false,
+        total_price: totalPrice,
+        shipping_price: cartItems && cartItems.length > 0 && 
+                      cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0) > 100 
+                      ? 0 : 7.99,
+      };
+      
+      // Call API to create order
+      const orderResponse = await createOrder(orderData);
+      
+      setOrderId(orderResponse.id);
+      setShippingDetails(shippingData);
+      setStep('payment');
+      
+      // Create payment intent
+      const paymentResponse = await createPaymentIntent(orderResponse.id, totalPrice);
+      setClientSecret(paymentResponse.clientSecret);
+      
+    } catch (error) {
+      console.error('Error during checkout process:', error);
+      toast({
+        title: 'Checkout Error',
+        description: error instanceof Error ? error.message : 'An unexpected error occurred',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   if (isLoading) {
@@ -235,7 +267,7 @@ Phone: ${shippingInfo.phone}
               </CardHeader>
               <CardContent>
                 <ShippingForm 
-                  onSubmit={createOrder} 
+                  onSubmit={handleShippingSubmit} 
                   isProcessing={isProcessing}
                   initialValues={savedShippingInfo || undefined} 
                 />
@@ -254,6 +286,7 @@ Phone: ${shippingInfo.phone}
                       onSuccess={handlePaymentSuccess}
                       onError={handlePaymentError}
                       clientSecret={clientSecret}
+                      orderId={orderId?.toString() || ''}
                     />
                   </Elements>
                 ) : (

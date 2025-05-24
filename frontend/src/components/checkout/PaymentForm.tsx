@@ -2,18 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
 import api from '@/api/config';
+import { useNavigate } from 'react-router-dom';
 
 interface PaymentFormProps {
   onSuccess: () => void;
   onError: (error: string) => void;
   clientSecret?: string;
+  orderId: string;
 }
 
-const PaymentForm = ({ onSuccess, onError, clientSecret }: PaymentFormProps) => {
+const PaymentForm = ({ onSuccess, onError, clientSecret, orderId }: PaymentFormProps) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -55,17 +58,24 @@ const PaymentForm = ({ onSuccess, onError, clientSecret }: PaymentFormProps) => 
         onError(result.error.message || 'Payment failed');
       } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
         // Call the API to confirm the payment on the server
-        await api.post('api/payments/confirm-payment/', {
+        await api.post('/api/payments/confirm-payment/', {
           payment_intent_id: result.paymentIntent.id,
+          order_id: orderId
         });
 
         // Payment succeeded
         onSuccess();
+
+        // Navigate to order confirmation
+        navigate(`/order-confirmation/${orderId}`);
       }
     } catch (err: any) {
       console.error("Payment error:", err);
       setErrorMessage(err.message || 'An unexpected error occurred');
       onError(err.message || 'Payment failed');
+
+      // Navigate to order confirmation
+      navigate(`/order-confirmation/${orderId}`);
     } finally {
       setIsProcessing(false);
     }

@@ -35,9 +35,7 @@ export const productService = {
   getFeaturedProducts: async () => {
     try {
       // Since there's no dedicated featured endpoint, we'll use a parameter
-      const response = await apiClient.get('/api/products/', {
-        params: { is_featured: true }
-      });
+      const response = await apiClient.get('/api/products/featured/');
       return response.data.results || response.data;
     } catch (error) {
       console.error('Error fetching featured products:', error);
