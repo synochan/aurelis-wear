@@ -15,15 +15,15 @@
   ],
   "env": {
     "DATABASE_URL": "postgresql://aurelis_owner:npg_tmeoQ63kljNh@ep-icy-resonance-a12upm7n-pooler.ap-southeast-1.aws.neon.tech/aurelis?sslmode=require",
-    "PYTHONPATH": "${PYTHONPATH}:/vercel/path0:/vercel/path0/backend",
+    "PYTHONPATH": "./python_packages:${PYTHONPATH}:/vercel/path0:/vercel/path0/backend",
     "DJANGO_SETTINGS_MODULE": "backend.settings",
-    "DEBUG": "False",
+    "DEBUG": "True",
     "ALLOWED_HOSTS": ".vercel.app,aurelis-wear.vercel.app",
     "PYTHON_VERSION": "3.9"
   },
   "functions": {
     "api/index.py": {
-      "includeFiles": "backend/**",
+      "includeFiles": "backend/**,python_packages/**",
       "excludeFiles": "backend/db.sqlite3",
       "memory": 1024,
       "maxDuration": 10,

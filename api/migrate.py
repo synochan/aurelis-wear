@@ -6,11 +6,28 @@ This file should be invoked during the build process.
 import os
 import sys
 import traceback
-import django
 
-# Add the project root directory to Python path
-sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend')))
+# Add the project root directory and custom packages to Python path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+backend_dir = os.path.join(parent_dir, 'backend')
+custom_packages_dir = os.path.join(parent_dir, 'python_packages')
+
+# Print debugging information
+print(f"Migration script current directory: {current_dir}")
+print(f"Migration script parent directory: {parent_dir}")
+print(f"Migration script backend directory: {backend_dir}")
+print(f"Migration script custom packages directory: {custom_packages_dir}")
+print(f"Initial sys.path: {sys.path}")
+
+# Insert paths in the correct order
+if os.path.exists(custom_packages_dir):
+    sys.path.insert(0, custom_packages_dir)
+    print(f"Added custom packages directory to sys.path")
+
+sys.path.insert(0, backend_dir)
+sys.path.insert(0, parent_dir)
+print(f"Updated sys.path: {sys.path}")
 
 # Configure Django settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
@@ -19,6 +36,9 @@ def run_migrations():
     """Run Django migrations"""
     try:
         print("Setting up Django...")
+        print("Trying to import django...")
+        import django
+        print(f"Django imported successfully: {django.__version__}")
         django.setup()
         
         # Print database configuration (without sensitive data)
