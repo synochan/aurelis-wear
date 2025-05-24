@@ -1,15 +1,22 @@
 {
-  "name": "aurelis-wear-shop",
+  "name": "aurelis-wear",
   "version": "1.0.0",
-  "description": "Aurelis Wear Shop - E-commerce application with React frontend and Django backend",
+  "description": "Aurelis Wear E-commerce Platform",
   "private": true,
   "scripts": {
-    "frontend": "cd frontend && npm run dev",
-    "backend": "cd backend && python manage.py runserver",
-    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
-    "start": "npm run dev"
+    "build": "node api/init.js && cd frontend && npm install && npm run build",
+    "dev": "cd frontend && npm run dev",
+    "start": "cd frontend && npm run preview"
   },
-  "devDependencies": {
-    "concurrently": "^8.2.2"
-  }
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "dependencies": {
+    "child_process": "^1.0.2",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7"
+  },
+  "author": "",
+  "license": "ISC"
 } 

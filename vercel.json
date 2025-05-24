@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "cd frontend && npm install && npm run build && cd ../backend && pip install -r requirements.txt && cd .. && python api/migrate.py",
+  "buildCommand": "node api/init.js && cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
-  "installCommand": "echo 'Installing dependencies...'",
+  "installCommand": "npm install -g node-gyp",
   "rewrites": [
     {
       "source": "/api/(.*)",
