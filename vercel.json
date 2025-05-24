@@ -4,16 +4,30 @@
     {
       "src": "api/index.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "frontend/dist"
+      }
     }
   ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.py" },
-    { "source": "/(.*)", "destination": "/" }
+    { "source": "/assets/(.*)", "destination": "/frontend/dist/assets/$1" },
+    { "source": "/(.*)", "destination": "/frontend/dist/index.html" }
   ],
   "env": {
     "PYTHON_VERSION": "3.9"
   },
   "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [
