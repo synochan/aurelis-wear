@@ -5,11 +5,22 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
 from rest_framework.routers import DefaultRouter
 from products.views import ProductViewSet, FeaturedProductsView, CategoryViewSet
 from authentication.views import RegisterView, LoginView, UserView, LogoutView, ChangePasswordView
 from cart.views import CartViewSet, CartItemViewSet
 from orders.views import OrderViewSet
+
+# Health check view
+def health_check(request):
+    """
+    Simple health check endpoint to verify the API is working
+    """
+    return JsonResponse({
+        'status': 'healthy',
+        'environment': 'production' if not settings.DEBUG else 'development'
+    })
 
 # Create a router for viewsets
 router = DefaultRouter()
@@ -23,6 +34,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include([
         path('', include(router.urls)),
+        path('health/', health_check, name='health-check'),
         path('products/featured/', FeaturedProductsView.as_view(), name='featured-products'),
         path('auth/register/', RegisterView.as_view(), name='register'),
         path('auth/login/', LoginView.as_view(), name='login'),

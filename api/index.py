@@ -1,5 +1,6 @@
 import os
 import sys
+from http.server import BaseHTTPRequestHandler
 
 # Add backend folder to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend')))
@@ -8,4 +9,63 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 
 from django.core.wsgi import get_wsgi_application
-application = get_wsgi_application()
+from django.core.handlers.wsgi import WSGIRequest
+import io
+
+# Create the WSGI application
+django_app = get_wsgi_application()
+
+# Vercel serverless handler
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.handle_request()
+        
+    def do_POST(self):
+        self.handle_request()
+        
+    def do_PUT(self):
+        self.handle_request()
+        
+    def do_DELETE(self):
+        self.handle_request()
+        
+    def do_OPTIONS(self):
+        self.handle_request()
+        
+    def handle_request(self):
+        # Create a WSGI environment
+        environ = {
+            'wsgi.input': io.BytesIO(self.rfile.read(int(self.headers.get('Content-Length', 0)))),
+            'wsgi.errors': sys.stderr,
+            'wsgi.version': (1, 0),
+            'wsgi.multithread': False,
+            'wsgi.multiprocess': False,
+            'wsgi.run_once': False,
+            'wsgi.url_scheme': 'https',
+            'REQUEST_METHOD': self.command,
+            'PATH_INFO': self.path.split('?')[0],
+            'QUERY_STRING': self.path.split('?')[1] if '?' in self.path else '',
+            'CONTENT_TYPE': self.headers.get('Content-Type', ''),
+            'CONTENT_LENGTH': self.headers.get('Content-Length', ''),
+            'SERVER_NAME': 'vercel',
+            'SERVER_PORT': '443',
+        }
+        
+        # Add HTTP headers to the environment
+        for key, value in self.headers.items():
+            environ[f'HTTP_{key.upper().replace("-", "_")}'] = value
+            
+        # Define start_response callback
+        def start_response(status, headers):
+            status_code = int(status.split(' ')[0])
+            self.send_response(status_code)
+            for header, value in headers:
+                self.send_header(header, value)
+            self.end_headers()
+            
+        # Process the request through Django WSGI app
+        response = django_app(environ, start_response)
+        
+        # Write response body
+        for chunk in response:
+            self.wfile.write(chunk)
