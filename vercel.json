@@ -1,17 +1,19 @@
 {
   "version": 2,
-  "buildCommand": "cd backend && python deploy.py",
-  "installCommand": "pip install -r api/requirements.txt",
-  "functions": {
-    "api/*.py": {
-      "memory": 1024,
-      "maxDuration": 10
+  "framework": "python",
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python"
     }
-  },
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.py" },
-    { "source": "/(.*)", "destination": "/" }
   ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.py" },
+    { "src": "/(.*)", "dest": "/" }
+  ],
+  "env": {
+    "PYTHON_VERSION": "3.9"
+  },
   "headers": [
     {
       "source": "/(.*)",
