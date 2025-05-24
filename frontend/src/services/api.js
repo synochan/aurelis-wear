@@ -14,8 +14,11 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
+  withCredentials: false, // Set to false for cross-domain requests
 });
+
+// Log configuration for debugging
+console.debug(`API Client initialized with baseURL: ${API_URL}`);
 
 // Add request interceptor to include auth token
 api.interceptors.request.use(
@@ -27,6 +30,12 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Ensure all URLs end with trailing slash for Django REST Framework
+    if (!config.url.endsWith('/')) {
+      config.url = `${config.url}/`;
+    }
+    
     return config;
   },
   (error) => {
@@ -45,6 +54,14 @@ api.interceptors.response.use(
   (error) => {
     if (error.response) {
       console.error(`API Error ${error.response.status}:`, error.response.data);
+      
+      // Handle 401 Unauthorized errors (token expired or invalid)
+      if (error.response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        // Optional: Redirect to login page
+        // window.location.href = '/login';
+      }
     } else if (error.request) {
       console.error('API Error: No response received', error.request);
     } else {
