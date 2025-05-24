@@ -2,30 +2,35 @@ import axios from 'axios';
 
 // Determine base URL based on environment
 const getBaseUrl = () => {
-  // In production on Vercel, use the deployed backend URL
+  // In production on Vercel, always use the dedicated backend URL
   if (import.meta.env.PROD) {
-    // Use the API_URL environment variable or fallback to the frontend domain
-    const apiUrl = import.meta.env.VITE_API_URL;
-    if (apiUrl) {
-      console.log('Using configured API URL:', apiUrl);
-      return apiUrl;
-    }
-    
-    // If no API_URL is set, use the same domain as the frontend
-    // This works only if both frontend and backend are on the same domain
-    console.log('Using window.location.origin as API URL:', window.location.origin);
-    return window.location.origin;
+    // Use the hardcoded backend URL to ensure consistency
+    const backendUrl = 'https://aurelis-wear-api.vercel.app';
+    console.log('[config] Using hardcoded backend URL:', backendUrl);
+    return backendUrl;
   }
   
   // In development, use the configured API URL or localhost
   const devUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-  console.log('Using development API URL:', devUrl);
+  console.log('[config] Using development API URL:', devUrl);
   return devUrl;
 };
 
+// Helper to ensure all API paths have the /api prefix
+const ensureApiPath = (path: string) => {
+  if (!path.startsWith('/api') && !path.startsWith('api/')) {
+    return `/api${path.startsWith('/') ? path : `/${path}`}`;
+  }
+  return path;
+};
+
+// Calculate the API base URL
+const apiBaseUrl = getBaseUrl();
+console.log('[config] API Base URL:', apiBaseUrl);
+
 // Create base config for API calls
 export const apiConfig = {
-  baseURL: getBaseUrl(),
+  baseURL: apiBaseUrl,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -69,10 +74,6 @@ export const handleApiResponse = async (response: Response) => {
   return response.json();
 };
 
-// Calculate the API base URL
-const apiBaseUrl = getBaseUrl();
-console.log('API Base URL:', apiBaseUrl);
-
 // Create axios instance with base configuration
 const api = axios.create({
   baseURL: apiBaseUrl,
@@ -84,6 +85,11 @@ const api = axios.create({
 // Add request interceptor for authentication
 api.interceptors.request.use(
   (config) => {
+    // Ensure path has /api prefix
+    if (config.url) {
+      config.url = ensureApiPath(config.url);
+    }
+    
     const token = localStorage.getItem('token');
     if (token) {
       config.headers['Authorization'] = `Token ${token}`;
@@ -91,7 +97,7 @@ api.interceptors.request.use(
     
     // Debug logging
     const fullUrl = `${config.baseURL}${config.url}`;
-    console.log(`🚀 Request: ${config.method?.toUpperCase()} ${fullUrl}`, config.data);
+    console.log(`[config] Request: ${config.method?.toUpperCase()} ${fullUrl}`, config.data);
     return config;
   },
   (error) => Promise.reject(error)
@@ -100,7 +106,7 @@ api.interceptors.request.use(
 // Add response interceptor for error handling
 api.interceptors.response.use(
   (response) => {
-    console.log(`✅ Response from ${response.config.url}:`, response.status);
+    console.log(`[config] Response from ${response.config.url}:`, response.status);
     return response;
   },
   (error) => {
@@ -114,12 +120,12 @@ api.interceptors.response.use(
     
     // Error logging
     if (error.response) {
-      console.error(`❌ Error ${error.response.status} from ${error.config.url}:`, 
+      console.error(`[config] Error ${error.response.status} from ${error.config.url}:`, 
                    error.response.data);
     } else if (error.request) {
-      console.error('❌ No response received:', error.request);
+      console.error('[config] No response received:', error.request);
     } else {
-      console.error('❌ Request failed:', error.message);
+      console.error('[config] Request failed:', error.message);
     }
     
     return Promise.reject(error);

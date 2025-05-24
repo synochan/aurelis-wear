@@ -3,18 +3,11 @@ import axios from 'axios';
 // Get the API URL with fallback
 const getApiUrl = () => {
   try {
-    // In production on Vercel, use the deployed backend URL
+    // In production on Vercel, always use the dedicated backend URL
     if (import.meta.env.PROD) {
-      // Use the API_URL environment variable or fallback to the frontend domain
-      const apiUrl = import.meta.env.VITE_API_URL;
-      if (apiUrl) {
-        console.log('[client] Using configured API URL:', apiUrl);
-        return apiUrl;
-      }
-      
-      // If no API_URL is set, use the backend domain directly
+      // Use a direct, hardcoded URL to ensure we always hit the backend server
       const backendUrl = 'https://aurelis-wear-api.vercel.app';
-      console.log('[client] Using backend URL:', backendUrl);
+      console.log('[client] Using hardcoded backend URL:', backendUrl);
       return backendUrl;
     }
     
@@ -32,6 +25,14 @@ const getApiUrl = () => {
 const apiBaseUrl = getApiUrl();
 console.log('[client] API Base URL:', apiBaseUrl);
 
+// Helper to ensure all API paths have the /api prefix
+const ensureApiPath = (path: string) => {
+  if (!path.startsWith('/api') && !path.startsWith('api/')) {
+    return `/api${path.startsWith('/') ? path : `/${path}`}`;
+  }
+  return path;
+};
+
 // Create axios instance
 export const apiClient = axios.create({
   baseURL: apiBaseUrl,
@@ -42,9 +43,14 @@ export const apiClient = axios.create({
   timeout: 10000, // 10 second timeout
 });
 
-// Add a request interceptor to attach auth token
+// Add a request interceptor to attach auth token and ensure proper paths
 apiClient.interceptors.request.use(
   (config) => {
+    // Ensure path has /api prefix
+    if (config.url) {
+      config.url = ensureApiPath(config.url);
+    }
+    
     // Log requests in development
     const fullUrl = `${config.baseURL}${config.url}`;
     console.debug(`[client] API Request: ${config.method?.toUpperCase()} ${fullUrl}`, 
@@ -54,6 +60,7 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers['Authorization'] = `Token ${token}`;
     }
+    
     return config;
   },
   (error) => {
@@ -71,7 +78,7 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     // Handle authentication errors
-    if (error.response?.status === 401) {
+    if (error.response && error.response.status === 401) {
       // Clear token on authentication errors
       localStorage.removeItem('token');
       console.warn('[client] Authentication token expired or invalid');

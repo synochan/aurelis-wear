@@ -27,16 +27,34 @@ export interface AuthResponse {
 // Store user data in memory
 let currentUser: any = null;
 
+// Get the backend URL
+const getBackendUrl = () => {
+  if (import.meta.env.PROD) {
+    return 'https://aurelis-wear-api.vercel.app';
+  }
+  return import.meta.env.VITE_API_URL || 'http://localhost:8000';
+};
+
+// Ensure path has /api prefix
+const ensureApiPath = (path: string) => {
+  if (!path.startsWith('/api') && !path.startsWith('api/')) {
+    return `/api${path.startsWith('/') ? path : `/${path}`}`;
+  }
+  return path;
+};
+
+const BACKEND_URL = getBackendUrl();
+
 export const authService = {
     // Login user
     login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
       try {
-        console.log('Attempting to login with:', credentials.email);
+        console.log('[auth] Attempting to login with:', credentials.email);
         
-        // Use axios directly for more control
-        const baseUrl = api.defaults.baseURL || '';
-        const url = `${baseUrl}/api/auth/login/`;
-        console.log('Login URL:', url);
+        // Use direct axios call with full URL
+        const loginPath = ensureApiPath('/auth/login/');
+        const url = `${BACKEND_URL}${loginPath}`;
+        console.log('[auth] Login URL:', url);
         
         const response = await axios({
           method: 'post',
@@ -51,7 +69,7 @@ export const authService = {
         });
         
         const data = response.data;
-        console.log('Login successful:', data);
+        console.log('[auth] Login successful:', data);
         
         // Store auth token in localStorage for subsequent requests
         if (data.token) {
@@ -62,7 +80,7 @@ export const authService = {
         
         return data;
       } catch (error: any) {
-        console.error('Login error details:', error.response?.data || error.message);
+        console.error('[auth] Login error details:', error.response?.data || error.message);
         // Clear any partial auth data on error
         localStorage.removeItem('token');
         currentUser = null;
@@ -76,7 +94,7 @@ export const authService = {
         // Generate username from email (use part before @)
         const username = userData.email.split('@')[0];
         
-        console.log('Registering with username:', username);
+        console.log('[auth] Registering with username:', username);
         
         // Match the field names expected by the backend handler
         const registerData = {
@@ -88,12 +106,12 @@ export const authService = {
           last_name: userData.lastName
         };
         
-        console.log('Registration data:', registerData);
+        console.log('[auth] Registration data:', registerData);
         
-        // Use axios directly for more control
-        const baseUrl = api.defaults.baseURL || '';
-        const url = `${baseUrl}/api/auth/register/`;
-        console.log('Registration URL:', url);
+        // Use direct axios call with full URL
+        const registerPath = ensureApiPath('/auth/register/');
+        const url = `${BACKEND_URL}${registerPath}`;
+        console.log('[auth] Registration URL:', url);
         
         const response = await axios({
           method: 'post',
@@ -105,7 +123,7 @@ export const authService = {
         });
         
         const data = response.data;
-        console.log('Registration successful:', data);
+        console.log('[auth] Registration successful:', data);
         
         // Store auth token in localStorage for subsequent requests
         if (data.token) {
@@ -116,7 +134,7 @@ export const authService = {
         
         return data;
       } catch (error: any) {
-        console.error('Registration error details:', error.response?.data || error.message);
+        console.error('[auth] Registration error details:', error.response?.data || error.message);
         // Clear any partial auth data on error
         localStorage.removeItem('token');
         currentUser = null;
@@ -147,7 +165,17 @@ export const authService = {
       }
       
       try {
-        const response = await api.get('/api/auth/user/');
+        const userPath = ensureApiPath('/auth/user/');
+        const url = `${BACKEND_URL}${userPath}`;
+        
+        const response = await axios({
+          method: 'get',
+          url: url,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${localStorage.getItem('token')}`
+          }
+        });
         
         const data = response.data;
         // Cache the user data
@@ -174,7 +202,18 @@ export const authService = {
           throw new Error('Not authenticated');
         }
         
-        const response = await api.patch('/api/auth/user/', profileData);
+        const userPath = ensureApiPath('/auth/user/');
+        const url = `${BACKEND_URL}${userPath}`;
+        
+        const response = await axios({
+          method: 'patch',
+          url: url,
+          data: profileData,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${localStorage.getItem('token')}`
+          }
+        });
         
         const data = response.data;
         // Update the cached user data

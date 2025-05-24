@@ -27,8 +27,9 @@ try:
     from django.contrib.auth.models import User
     from django.contrib.auth import authenticate
     from rest_framework.authtoken.models import Token
-    from authentication.serializers import LoginSerializer, RegisterSerializer
-    from rest_framework import status
+    from django.http import JsonResponse
+    from products.models import Product, Category
+    from products.serializers import ProductSerializer, CategorySerializer
     
     # Import WSGI application
     from wsgi import application as django_app
@@ -55,19 +56,19 @@ try:
             self.handle_request('DELETE')
             
         def do_OPTIONS(self):
-            # Handle preflight CORS requests
+            # Always respond with 200 OK for OPTIONS requests with CORS headers
             self.send_response(200)
             self.send_header('Access-Control-Allow-Origin', '*')
-            self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-            self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+            self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
             self.send_header('Access-Control-Max-Age', '86400')  # 24 hours
             self.end_headers()
         
         def send_cors_headers(self):
             """Add CORS headers to the response"""
             self.send_header('Access-Control-Allow-Origin', '*')
-            self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-            self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+            self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
             
         def send_json_response(self, status_code, data):
             """Send a JSON response with appropriate headers"""
@@ -200,6 +201,17 @@ try:
                 return self.send_json_response(500, {
                     "detail": f"Server error: {str(e)}"
                 })
+                
+        def handle_health_check(self):
+            """Handle health check requests"""
+            return self.send_json_response(200, {
+                "status": "healthy",
+                "environment": "production" if not os.environ.get('DEBUG', 'False') == 'True' else "development"
+            })
+            
+        def extract_path(self, path):
+            """Extract the path without query parameters"""
+            return path.split('?')[0]
             
         def handle_request(self, method=None):
             try:
@@ -208,127 +220,139 @@ try:
                 
                 # Fix path for Django
                 original_path = self.path
-                path_info = original_path
+                clean_path = self.extract_path(original_path)
                 
                 # Debug path handling
                 print(f"Original request path: {original_path}")
                 print(f"Request method: {request_method}")
                 
-                # Direct handling for auth endpoints to bypass Django routing issues
-                if request_method == 'POST' and '/auth/login' in original_path:
-                    return self.handle_auth_login()
-                elif request_method == 'POST' and '/auth/register' in original_path:
-                    return self.handle_auth_register()
+                # Always handle OPTIONS requests directly (already done in do_OPTIONS)
+                if request_method == 'OPTIONS':
+                    return
                 
-                # Handle auth paths specially to ensure they work correctly
-                if '/auth/login' in original_path or '/auth/register' in original_path:
-                    # Make sure the path starts with /api for auth endpoints
-                    if not path_info.startswith('/api'):
+                # Handle all requests based on paths
+                # Prioritize exact path matches for critical endpoints
+                
+                # Auth endpoints
+                if clean_path.endswith('/api/auth/login/') or clean_path.endswith('/auth/login/'):
+                    if request_method == 'POST':
+                        return self.handle_auth_login()
+                    else:
+                        return self.send_json_response(405, {"detail": "Method not allowed"})
+                        
+                elif clean_path.endswith('/api/auth/register/') or clean_path.endswith('/auth/register/'):
+                    if request_method == 'POST':
+                        return self.handle_auth_register()
+                    else:
+                        return self.send_json_response(405, {"detail": "Method not allowed"})
+                
+                # Health check endpoint
+                elif clean_path == '/api/health/' or clean_path == '/health/' or clean_path == '/':
+                    return self.handle_health_check()
+                
+                # All other requests handled by Django WSGI app
+                else:
+                    path_info = clean_path
+                    
+                    # Keep /api prefix if present, otherwise add it (except for root path)
+                    if not path_info.startswith('/api') and path_info != '/':
                         path_info = f'/api{path_info}'
-                    print(f"Special handling for auth endpoint: {path_info}")
-                # Keep /api prefix if present, otherwise add it (except for root path)
-                elif not path_info.startswith('/api') and path_info != '/':
-                    path_info = f'/api{path_info}'
-                
-                # Handle root path
-                if path_info == '/':
-                    path_info = '/api/health/'
-                
-                print(f"Adjusted path for Django: {path_info}")
-                
-                # Read request body
-                content_length = int(self.headers.get('Content-Length', 0))
-                request_body = self.rfile.read(content_length) if content_length > 0 else b''
-                
-                # Log request info
-                print(f"Request: {request_method} {path_info}")
-                print(f"Headers: {dict(self.headers)}")
-                if request_body and content_length < 1000:  # Don't log large bodies
-                    try:
-                        body_str = request_body.decode('utf-8')
-                        print(f"Body: {body_str}")
-                        # Try to parse JSON for better logging
+                    
+                    print(f"Passing to Django: {path_info}")
+                    
+                    # Read request body
+                    content_length = int(self.headers.get('Content-Length', 0))
+                    request_body = self.rfile.read(content_length) if content_length > 0 else b''
+                    
+                    # Log request info
+                    print(f"Request: {request_method} {path_info}")
+                    print(f"Headers: {dict(self.headers)}")
+                    if request_body and content_length < 1000:
                         try:
-                            body_json = json.loads(body_str)
-                            print(f"Body (parsed): {json.dumps(body_json, indent=2)}")
+                            body_str = request_body.decode('utf-8')
+                            print(f"Body: {body_str}")
+                            # Try to parse JSON for better logging
+                            try:
+                                body_json = json.loads(body_str)
+                                print(f"Body (parsed): {json.dumps(body_json, indent=2)}")
+                            except:
+                                pass
                         except:
-                            pass
-                    except:
-                        print(f"Body: (binary data, {len(request_body)} bytes)")
-                
-                # Create a WSGI environment
-                environ = {
-                    'wsgi.input': io.BytesIO(request_body),
-                    'wsgi.errors': sys.stderr,
-                    'wsgi.version': (1, 0),
-                    'wsgi.multithread': False,
-                    'wsgi.multiprocess': False,
-                    'wsgi.run_once': False,
-                    'wsgi.url_scheme': 'https',
-                    'REQUEST_METHOD': request_method,  # Use the explicitly provided method
-                    'PATH_INFO': path_info,
-                    'QUERY_STRING': self.path.split('?')[1] if '?' in self.path else '',
-                    'CONTENT_TYPE': self.headers.get('Content-Type', ''),
-                    'CONTENT_LENGTH': str(content_length),
-                    'SERVER_NAME': 'vercel',
-                    'SERVER_PORT': '443',
-                    'HTTP_HOST': self.headers.get('Host', 'vercel.app'),
-                }
-                
-                # Add HTTP headers to the environment
-                for key, value in self.headers.items():
-                    environ[f'HTTP_{key.upper().replace("-", "_")}'] = value
-                
-                # Add CORS headers to response
-                response_headers = []
-                
-                # Define start_response callback with CORS headers
-                def start_response(status, headers):
-                    nonlocal response_headers
-                    response_headers = headers
+                            print(f"Body: (binary data, {len(request_body)} bytes)")
                     
-                    # Get status code
-                    code = int(status.split(' ')[0])
-                    self.send_response(code)
+                    # Create a WSGI environment
+                    environ = {
+                        'wsgi.input': io.BytesIO(request_body),
+                        'wsgi.errors': sys.stderr,
+                        'wsgi.version': (1, 0),
+                        'wsgi.multithread': False,
+                        'wsgi.multiprocess': False,
+                        'wsgi.run_once': False,
+                        'wsgi.url_scheme': 'https',
+                        'REQUEST_METHOD': request_method,  # Use the explicitly provided method
+                        'PATH_INFO': path_info,
+                        'QUERY_STRING': self.path.split('?')[1] if '?' in self.path else '',
+                        'CONTENT_TYPE': self.headers.get('Content-Type', ''),
+                        'CONTENT_LENGTH': str(content_length),
+                        'SERVER_NAME': 'vercel',
+                        'SERVER_PORT': '443',
+                        'HTTP_HOST': self.headers.get('Host', 'vercel.app'),
+                    }
                     
-                    # Add CORS headers
-                    cors_headers = [
-                        ('Access-Control-Allow-Origin', '*'),
-                        ('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS'),
-                        ('Access-Control-Allow-Headers', 'Content-Type,Authorization'),
-                    ]
+                    # Add HTTP headers to the environment
+                    for key, value in self.headers.items():
+                        environ[f'HTTP_{key.upper().replace("-", "_")}'] = value
                     
-                    # Send all headers
-                    all_headers = headers + cors_headers
-                    for header, value in all_headers:
-                        self.send_header(header, value)
+                    # Add CORS headers to response
+                    response_headers = []
                     
-                    self.end_headers()
-                
-                # Process the request through Django WSGI app
-                response = django_app(environ, start_response)
-                
-                # Write response body
-                response_body = b''
-                for chunk in response:
-                    response_body += chunk
-                    self.wfile.write(chunk)
-                
-                # Log response
-                print(f"Response status: {response_headers[0][1] if response_headers else 'unknown'}")
-                print(f"Response headers: {response_headers}")
-                if len(response_body) < 1000:  # Don't log large responses
-                    try:
-                        resp_str = response_body.decode('utf-8')
-                        print(f"Response body: {resp_str}")
-                        # Try to parse JSON for better logging
+                    # Define start_response callback with CORS headers
+                    def start_response(status, headers):
+                        nonlocal response_headers
+                        response_headers = headers
+                        
+                        # Get status code
+                        code = int(status.split(' ')[0])
+                        self.send_response(code)
+                        
+                        # Add CORS headers
+                        cors_headers = [
+                            ('Access-Control-Allow-Origin', '*'),
+                            ('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH'),
+                            ('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With'),
+                        ]
+                        
+                        # Send all headers
+                        all_headers = headers + cors_headers
+                        for header, value in all_headers:
+                            self.send_header(header, value)
+                        
+                        self.end_headers()
+                    
+                    # Process the request through Django WSGI app
+                    response = django_app(environ, start_response)
+                    
+                    # Write response body
+                    response_body = b''
+                    for chunk in response:
+                        response_body += chunk
+                        self.wfile.write(chunk)
+                    
+                    # Log response
+                    print(f"Response status: {response_headers[0][1] if response_headers else 'unknown'}")
+                    print(f"Response headers: {response_headers}")
+                    if len(response_body) < 1000:
                         try:
-                            resp_json = json.loads(resp_str)
-                            print(f"Response body (parsed): {json.dumps(resp_json, indent=2)}")
+                            resp_str = response_body.decode('utf-8')
+                            print(f"Response body: {resp_str}")
+                            # Try to parse JSON for better logging
+                            try:
+                                resp_json = json.loads(resp_str)
+                                print(f"Response body (parsed): {json.dumps(resp_json, indent=2)}")
+                            except:
+                                pass
                         except:
-                            pass
-                    except:
-                        print(f"Response body: (binary data, {len(response_body)} bytes)")
+                            print(f"Response body: (binary data, {len(response_body)} bytes)")
                     
             except Exception as e:
                 # Log the error
@@ -353,7 +377,7 @@ try:
                 if os.environ.get('DEBUG', 'False') == 'True':
                     error_info.update({
                         "traceback": traceback.format_exc(),
-                        "adjusted_path": path_info if 'path_info' in locals() else None,
+                        "adjusted_path": clean_path if 'clean_path' in locals() else None,
                         "debug_info": {k: v for k, v in debug_info.items() if k != 'env'}
                     })
                 
@@ -376,8 +400,8 @@ except Exception as e:
         def do_OPTIONS(self):
             self.send_response(200)
             self.send_header('Access-Control-Allow-Origin', '*')
-            self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-            self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+            self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
             self.send_header('Access-Control-Max-Age', '86400')  # 24 hours
             self.end_headers()
         
