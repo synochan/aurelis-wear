@@ -15,38 +15,7 @@ FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://aurelis-wear.vercel.app')
 
 # Function to check if an origin is allowed
 def is_allowed_origin(origin):
-    if not origin:
-        return False
-        
-    # Allow localhost on any port
-    if origin.startswith('http://localhost:') or origin.startswith('https://localhost:'):
-        return True
-        
-    # Allow aurelis-wear.vercel.app (main domain)
-    if origin == 'https://aurelis-wear.vercel.app':
-        return True
-        
-    # Allow specific Vercel preview URLs that we've seen in errors
-    if origin in [
-        'https://aurelis-jehzjraqe-cjs-projects-0f28e847.vercel.app',
-        'https://aurelis-9mc5n98dd-cjs-projects-0f28e847.vercel.app',
-        'https://aurelis-it-nine.vercel.app'
-    ]:
-        return True
-        
-    # Allow any aurelis-*.vercel.app domain (preview deployments)
-    if re.match(r'https://aurelis-[a-z0-9\-]+\.vercel\.app', origin):
-        return True
-        
-    # Allow the configured FRONTEND_URL
-    if origin == FRONTEND_URL:
-        return True
-        
-    # Allow any *.vercel.app domain as a fallback
-    if '.vercel.app' in origin:
-        return True
-        
-    # For development, just return True for all origins
+    # Always allow all origins
     return True
 
 # Debug information
@@ -100,7 +69,7 @@ try:
             self.send_response(200)
             self.send_header('Access-Control-Allow-Origin', '*')
             self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
-            self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, X-CSRF-Token')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, X-CSRF-Token, Accept-Version, Content-Length, Content-MD5, Date, X-Api-Version')
             self.send_header('Access-Control-Allow-Credentials', 'true')
             self.send_header('Access-Control-Max-Age', '86400')  # 24 hours
             self.end_headers()
@@ -118,7 +87,7 @@ try:
             # Always use wildcard for CORS in serverless context
             self.send_header('Access-Control-Allow-Origin', '*')
             self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
-            self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, X-CSRF-Token')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, X-CSRF-Token, Accept-Version, Content-Length, Content-MD5, Date, X-Api-Version')
             self.send_header('Access-Control-Allow-Credentials', 'true')
             
         def send_json_response(self, status_code, data):

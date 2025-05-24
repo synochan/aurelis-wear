@@ -8,9 +8,9 @@
     { "source": "/(.*)", "destination": "index.py" }
   ],
   "env": {
-    "DATABASE_URL": "postgresql://aurelis_owner:npg_tmeoQ63kljNh@ep-icy-resonance-a12upm7n-pooler.ap-southeast-1.aws.neon.tech/aurelis?sslmode=require",
+    "DATABASE_URL": "${DATABASE_URL}",
     "DJANGO_SETTINGS_MODULE": "backend.settings",
-    "DEBUG": "True",
+    "DEBUG": "False",
     "ALLOWED_HOSTS": ".vercel.app,aurelis-wear-api.vercel.app,localhost,127.0.0.1",
     "FRONTEND_URL": "https://aurelis-wear.vercel.app"
   },
