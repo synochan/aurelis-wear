@@ -3,6 +3,7 @@ import json
 import sys
 import os
 import traceback
+import re
 
 # Configure paths and environment
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -11,15 +12,33 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 
 # Get the frontend URL from environment or use a default
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://aurelis-wear.vercel.app')
-# Add additional allowed origins as needed
-ALLOWED_ORIGINS = [
-    FRONTEND_URL,
-    'https://aurelis-wear.vercel.app',
-    'https://aurelis-jehzjraqe-cjs-projects-0f28e847.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://localhost:8000'
-]
+
+# Function to check if an origin is allowed
+def is_allowed_origin(origin):
+    if not origin:
+        return False
+        
+    # Allow localhost on any port
+    if origin.startswith('http://localhost:') or origin.startswith('https://localhost:'):
+        return True
+        
+    # Allow aurelis-wear.vercel.app
+    if origin == 'https://aurelis-wear.vercel.app':
+        return True
+        
+    # Allow any aurelis-*.vercel.app domain (preview deployments)
+    if re.match(r'https://aurelis-[a-z0-9\-]+\.vercel\.app', origin):
+        return True
+        
+    # Allow the configured FRONTEND_URL
+    if origin == FRONTEND_URL:
+        return True
+        
+    # Allow any *.vercel.app domain as a fallback
+    if '.vercel.app' in origin:
+        return True
+        
+    return False
 
 # Debug information
 debug_info = {
@@ -68,20 +87,20 @@ try:
             self.handle_request('DELETE')
             
         def do_OPTIONS(self):
+            # Get the origin from the request headers
+            origin = self.headers.get('Origin')
+            
             # Always respond with 200 OK for OPTIONS requests with CORS headers
             self.send_response(200)
             
-            # Get the origin from the request headers
-            origin = self.headers.get('Origin', '*')
-            
-            # Set the Access-Control-Allow-Origin header
-            if origin in ALLOWED_ORIGINS or origin == 'null':
+            # Set the Access-Control-Allow-Origin header based on the origin
+            if origin and is_allowed_origin(origin):
                 self.send_header('Access-Control-Allow-Origin', origin)
             else:
                 self.send_header('Access-Control-Allow-Origin', '*')
                 
             self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
-            self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, X-CSRF-Token')
             self.send_header('Access-Control-Allow-Credentials', 'true')
             self.send_header('Access-Control-Max-Age', '86400')  # 24 hours
             self.end_headers()
@@ -89,20 +108,22 @@ try:
             # Log the CORS preflight request
             print(f"Handled OPTIONS preflight request from origin: {origin}")
             print(f"Request headers: {dict(self.headers)}")
+            print(f"Is allowed origin: {is_allowed_origin(origin)}")
         
         def send_cors_headers(self):
             """Add CORS headers to the response"""
             # Get the origin from the request headers
-            origin = self.headers.get('Origin', '*')
+            origin = self.headers.get('Origin')
             
-            # Set the Access-Control-Allow-Origin header
-            if origin in ALLOWED_ORIGINS or origin == 'null':
+            # Set the Access-Control-Allow-Origin header based on the origin
+            if origin and is_allowed_origin(origin):
                 self.send_header('Access-Control-Allow-Origin', origin)
+                self.send_header('Vary', 'Origin')  # Important when using specific origins
             else:
                 self.send_header('Access-Control-Allow-Origin', '*')
                 
             self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
-            self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, X-CSRF-Token')
             self.send_header('Access-Control-Allow-Credentials', 'true')
             
         def send_json_response(self, status_code, data):
@@ -241,7 +262,16 @@ try:
             """Handle health check requests"""
             return self.send_json_response(200, {
                 "status": "healthy",
-                "environment": "production" if not os.environ.get('DEBUG', 'False') == 'True' else "development"
+                "environment": "production" if not os.environ.get('DEBUG', 'False') == 'True' else "development",
+                "cors_info": {
+                    "allowed_origin_check": {
+                        "localhost": is_allowed_origin("http://localhost:3000"),
+                        "main_domain": is_allowed_origin("https://aurelis-wear.vercel.app"),
+                        "preview_domain": is_allowed_origin("https://aurelis-9mc5n98dd-cjs-projects-0f28e847.vercel.app"),
+                        "current_origin": is_allowed_origin(self.headers.get('Origin'))
+                    },
+                    "headers": dict(self.headers)
+                }
             })
             
         def extract_path(self, path):
@@ -261,6 +291,7 @@ try:
                 print(f"Original request path: {original_path}")
                 print(f"Request method: {request_method}")
                 print(f"Origin: {self.headers.get('Origin', 'None')}")
+                print(f"Is allowed origin: {is_allowed_origin(self.headers.get('Origin'))}")
                 
                 # Always handle OPTIONS requests directly (already done in do_OPTIONS)
                 if request_method == 'OPTIONS':
@@ -352,20 +383,21 @@ try:
                         self.send_response(code)
                         
                         # Get the origin from the request headers
-                        origin = self.headers.get('Origin', '*')
+                        origin = self.headers.get('Origin')
                         
                         # Add CORS headers
                         cors_headers = []
                         
-                        # Set the Access-Control-Allow-Origin header
-                        if origin in ALLOWED_ORIGINS or origin == 'null':
+                        # Set the Access-Control-Allow-Origin header based on the origin
+                        if origin and is_allowed_origin(origin):
                             cors_headers.append(('Access-Control-Allow-Origin', origin))
+                            cors_headers.append(('Vary', 'Origin'))  # Important when using specific origins
                         else:
                             cors_headers.append(('Access-Control-Allow-Origin', '*'))
                             
                         cors_headers.extend([
                             ('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH'),
-                            ('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With'),
+                            ('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With,Accept,X-CSRF-Token'),
                             ('Access-Control-Allow-Credentials', 'true'),
                         ])
                         
@@ -411,14 +443,15 @@ try:
                 self.send_header('Content-Type', 'application/json')
                 
                 # Set CORS headers even for error responses
-                origin = self.headers.get('Origin', '*')
-                if origin in ALLOWED_ORIGINS or origin == 'null':
+                origin = self.headers.get('Origin')
+                if origin and is_allowed_origin(origin):
                     self.send_header('Access-Control-Allow-Origin', origin)
+                    self.send_header('Vary', 'Origin')
                 else:
                     self.send_header('Access-Control-Allow-Origin', '*')
                     
                 self.send_header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH')
-                self.send_header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With')
+                self.send_header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With,Accept,X-CSRF-Token')
                 self.send_header('Access-Control-Allow-Credentials', 'true')
                 
                 self.end_headers()
@@ -428,7 +461,11 @@ try:
                     "message": "A server error has occurred",
                     "details": str(e),
                     "path": self.path,
-                    "method": request_method if 'request_method' in locals() else self.command
+                    "method": request_method if 'request_method' in locals() else self.command,
+                    "cors_info": {
+                        "origin": self.headers.get('Origin'),
+                        "is_allowed": is_allowed_origin(self.headers.get('Origin'))
+                    }
                 }
                 
                 # In debug mode, add more information
@@ -459,16 +496,17 @@ except Exception as e:
             self.send_response(200)
             
             # Get the origin from the request headers
-            origin = self.headers.get('Origin', '*')
+            origin = self.headers.get('Origin')
             
-            # Set the Access-Control-Allow-Origin header
-            if origin in ALLOWED_ORIGINS or origin == 'null':
+            # Set the Access-Control-Allow-Origin header based on the origin
+            if origin and is_allowed_origin(origin):
                 self.send_header('Access-Control-Allow-Origin', origin)
+                self.send_header('Vary', 'Origin')
             else:
                 self.send_header('Access-Control-Allow-Origin', '*')
                 
             self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH')
-            self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, X-CSRF-Token')
             self.send_header('Access-Control-Allow-Credentials', 'true')
             self.send_header('Access-Control-Max-Age', '86400')  # 24 hours
             self.end_headers()
@@ -478,14 +516,15 @@ except Exception as e:
             self.send_header('Content-Type', 'application/json')
             
             # Set CORS headers even for error responses
-            origin = self.headers.get('Origin', '*')
-            if origin in ALLOWED_ORIGINS or origin == 'null':
+            origin = self.headers.get('Origin')
+            if origin and is_allowed_origin(origin):
                 self.send_header('Access-Control-Allow-Origin', origin)
+                self.send_header('Vary', 'Origin')
             else:
                 self.send_header('Access-Control-Allow-Origin', '*')
                 
             self.send_header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH')
-            self.send_header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With,Accept,X-CSRF-Token')
             self.send_header('Access-Control-Allow-Credentials', 'true')
             
             self.end_headers()

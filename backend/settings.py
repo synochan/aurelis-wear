@@ -47,7 +47,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Django CORS headers middleware
+    'backend.middleware.CORSMiddleware',      # Our custom CORS middleware as a fallback
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Add WhiteNoise for static files
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -129,14 +130,25 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Enhanced CORS settings
-CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all origins in development
+CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins in both development and production for now
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
+
+# Fallback list of allowed origins
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
     'https://aurelis-wear.vercel.app',
-    os.environ.get('FRONTEND_URL', 'https://aurelis-wear.vercel.app'),
 ]
-CORS_ALLOW_CREDENTIALS = True
+
+# Add all Vercel preview domains (this will be expanded by the custom middleware)
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r'^https://aurelis-.*\.vercel\.app$',
+    r'^https://.*\.vercel\.app$',
+]
+
 CORS_ALLOW_METHODS = [
     'DELETE',
     'GET',
@@ -155,6 +167,7 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'x-csrf-token',
 ]
 
 # Rest Framework Settings
