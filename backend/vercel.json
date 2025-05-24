@@ -1,23 +1,15 @@
 {
-  "builds": [
-    {
-      "src": "wsgi.py",
-      "use": "@vercel/python",
-      "config": {
-        "maxLambdaSize": "15mb",
-        "runtime": "vercel-python@0.5.0"
-      }
+  "functions": {
+    "api/index.py": {
+      "runtime": "vercel-python@0.5.0",
+      "maxDuration": 10
     }
-  ],
+  },
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "wsgi.py"
-    }
+    { "src": "/(.*)", "dest": "api/index.py" }
   ],
   "env": {
-    "PYTHONPATH": "${PYTHONPATH}:/vercel/path0",
-    "DATABASE_URL": "postgresql://aurelis_owner:npg_z8KYB6VpXPbd@ep-shy-sun-a1wfphe1-pooler.ap-southeast-1.aws.neon.tech/aurelis?sslmode=require"
-  },
-  "buildCommand": "pip install -r requirements.txt && python manage.py migrate"
-} 
+    "DATABASE_URL": "postgresql://aurelis_owner:npg_z8KYB6VpXPbd@ep-shy-sun-a1wfphe1-pooler.ap-southeast-1.aws.neon.tech/aurelis?sslmode=require",
+    "DJANGO_SETTINGS_MODULE": "backend.settings"
+  }
+}
