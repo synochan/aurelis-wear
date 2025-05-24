@@ -1,7 +1,7 @@
 {
   "version": 2,
   "buildCommand": "cd backend && python deploy.py",
-  "installCommand": "pip install -r backend/requirements.txt",
+  "installCommand": "pip install -r api/requirements.txt",
   "functions": {
     "api/*.py": {
       "memory": 1024,
