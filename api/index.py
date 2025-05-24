@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 from http.server import BaseHTTPRequestHandler
 
 # Add backend folder to sys.path
@@ -8,12 +9,18 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 # Set Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 
-from django.core.wsgi import get_wsgi_application
-from django.core.handlers.wsgi import WSGIRequest
-import io
+try:
+    from django.core.wsgi import get_wsgi_application
+    from django.core.handlers.wsgi import WSGIRequest
+    import io
 
-# Create the WSGI application
-django_app = get_wsgi_application()
+    # Create the WSGI application
+    django_app = get_wsgi_application()
+    print("Django application initialized successfully")
+except Exception as e:
+    print(f"Error initializing Django application: {str(e)}")
+    traceback.print_exc()
+    raise e
 
 # Vercel serverless handler
 class handler(BaseHTTPRequestHandler):
@@ -30,42 +37,63 @@ class handler(BaseHTTPRequestHandler):
         self.handle_request()
         
     def do_OPTIONS(self):
-        self.handle_request()
+        # Handle preflight CORS requests
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        self.send_header('Access-Control-Max-Age', '86400')  # 24 hours
+        self.end_headers()
         
     def handle_request(self):
-        # Create a WSGI environment
-        environ = {
-            'wsgi.input': io.BytesIO(self.rfile.read(int(self.headers.get('Content-Length', 0)))),
-            'wsgi.errors': sys.stderr,
-            'wsgi.version': (1, 0),
-            'wsgi.multithread': False,
-            'wsgi.multiprocess': False,
-            'wsgi.run_once': False,
-            'wsgi.url_scheme': 'https',
-            'REQUEST_METHOD': self.command,
-            'PATH_INFO': self.path.split('?')[0],
-            'QUERY_STRING': self.path.split('?')[1] if '?' in self.path else '',
-            'CONTENT_TYPE': self.headers.get('Content-Type', ''),
-            'CONTENT_LENGTH': self.headers.get('Content-Length', ''),
-            'SERVER_NAME': 'vercel',
-            'SERVER_PORT': '443',
-        }
-        
-        # Add HTTP headers to the environment
-        for key, value in self.headers.items():
-            environ[f'HTTP_{key.upper().replace("-", "_")}'] = value
+        try:
+            # Log request details for debugging
+            print(f"Handling {self.command} request for path: {self.path}")
             
-        # Define start_response callback
-        def start_response(status, headers):
-            status_code = int(status.split(' ')[0])
-            self.send_response(status_code)
-            for header, value in headers:
-                self.send_header(header, value)
+            # Create a WSGI environment
+            environ = {
+                'wsgi.input': io.BytesIO(self.rfile.read(int(self.headers.get('Content-Length', 0)))),
+                'wsgi.errors': sys.stderr,
+                'wsgi.version': (1, 0),
+                'wsgi.multithread': False,
+                'wsgi.multiprocess': False,
+                'wsgi.run_once': False,
+                'wsgi.url_scheme': 'https',
+                'REQUEST_METHOD': self.command,
+                'PATH_INFO': self.path.split('?')[0],
+                'QUERY_STRING': self.path.split('?')[1] if '?' in self.path else '',
+                'CONTENT_TYPE': self.headers.get('Content-Type', ''),
+                'CONTENT_LENGTH': self.headers.get('Content-Length', ''),
+                'SERVER_NAME': 'vercel',
+                'SERVER_PORT': '443',
+            }
+            
+            # Add HTTP headers to the environment
+            for key, value in self.headers.items():
+                environ[f'HTTP_{key.upper().replace("-", "_")}'] = value
+                
+            # Define start_response callback
+            def start_response(status, headers):
+                status_code = int(status.split(' ')[0])
+                self.send_response(status_code)
+                for header, value in headers:
+                    self.send_header(header, value)
+                self.end_headers()
+                
+            # Process the request through Django WSGI app
+            response = django_app(environ, start_response)
+            
+            # Write response body
+            for chunk in response:
+                self.wfile.write(chunk)
+                
+        except Exception as e:
+            # Log the error
+            print(f"Error handling request: {str(e)}")
+            traceback.print_exc()
+            
+            # Return a 500 error response
+            self.send_response(500)
+            self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            
-        # Process the request through Django WSGI app
-        response = django_app(environ, start_response)
-        
-        # Write response body
-        for chunk in response:
-            self.wfile.write(chunk)
+            self.wfile.write(f'{{"error": "Internal Server Error: {str(e)}"}}'.encode('utf-8'))

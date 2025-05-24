@@ -23,7 +23,7 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "https://aurelis-wear-v1.vercel.app/api"
+    "VITE_API_URL": "https://aurelis-wear.vercel.app/api"
   },
   "buildCommand": "npm run build",
   "outputDirectory": "dist"

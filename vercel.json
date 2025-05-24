@@ -1,6 +1,8 @@
 {
-  "buildCommand": "cd frontend && npm install && npm run build && python api/migrate.py",
+  "version": 2,
+  "buildCommand": "cd frontend && npm install && npm run build && cd ../backend && pip install -r requirements.txt && cd .. && python api/migrate.py",
   "outputDirectory": "frontend/dist",
+  "installCommand": "echo 'Installing dependencies...'",
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -13,7 +15,10 @@
   ],
   "env": {
     "DATABASE_URL": "postgresql://aurelis_owner:npg_tmeoQ63kljNh@ep-icy-resonance-a12upm7n-pooler.ap-southeast-1.aws.neon.tech/aurelis?sslmode=require",
-    "PYTHONPATH": "${PYTHONPATH}:/vercel/path0/backend"
+    "PYTHONPATH": "${PYTHONPATH}:/vercel/path0/backend",
+    "DJANGO_SETTINGS_MODULE": "backend.settings",
+    "DEBUG": "False",
+    "ALLOWED_HOSTS": ".vercel.app,aurelis-wear.vercel.app"
   },
   "functions": {
     "api/index.py": {
@@ -43,7 +48,7 @@
           "key": "Access-Control-Allow-Headers",
           "value": "X-Requested-With, Content-Type, Accept, Authorization"
         }
-      ] 
+      ]
     },
     {
       "source": "/assets/(.*)",
