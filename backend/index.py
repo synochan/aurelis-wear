@@ -58,6 +58,17 @@ try:
             
         def handle_request(self):
             try:
+                # Fix path for Django
+                path_info = self.path
+                
+                # Add /api prefix if not present (to match Django URLs)
+                if not path_info.startswith('/api') and path_info != '/':
+                    path_info = f'/api{path_info}'
+                
+                # Handle root path
+                if path_info == '/':
+                    path_info = '/api/health/'
+                
                 # Create a WSGI environment
                 content_length = int(self.headers.get('Content-Length', 0))
                 environ = {
@@ -69,7 +80,7 @@ try:
                     'wsgi.run_once': False,
                     'wsgi.url_scheme': 'https',
                     'REQUEST_METHOD': self.command,
-                    'PATH_INFO': self.path,
+                    'PATH_INFO': path_info,
                     'QUERY_STRING': self.path.split('?')[1] if '?' in self.path else '',
                     'CONTENT_TYPE': self.headers.get('Content-Type', ''),
                     'CONTENT_LENGTH': str(content_length),
@@ -108,7 +119,9 @@ try:
                 error_info = {
                     "error": str(e),
                     "traceback": traceback.format_exc(),
-                    "debug_info": debug_info
+                    "debug_info": debug_info,
+                    "path": self.path,
+                    "adjusted_path": path_info if 'path_info' in locals() else None
                 }
                 
                 self.wfile.write(json.dumps(error_info, default=str).encode())
