@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "framework": "python",
   "builds": [
     {
       "src": "api/index.py",
