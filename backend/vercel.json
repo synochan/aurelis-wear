@@ -4,7 +4,16 @@
     { "src": "index.py", "use": "@vercel/python" }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "index.py" }
+    { 
+      "src": "/api/(.*)", 
+      "dest": "index.py",
+      "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"]
+    },
+    { 
+      "src": "/(.*)", 
+      "dest": "index.py",
+      "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"]
+    }
   ],
   "env": {
     "DATABASE_URL": "postgresql://aurelis_owner:npg_tmeoQ63kljNh@ep-icy-resonance-a12upm7n-pooler.ap-southeast-1.aws.neon.tech/aurelis?sslmode=require",

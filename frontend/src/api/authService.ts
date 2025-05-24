@@ -31,13 +31,27 @@ export const authService = {
     // Login user
     login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
       try {
-        // Use the full API path with api/ prefix
-        const response = await api.post('/api/auth/login/', {
-          email: credentials.email,
-          password: credentials.password
+        console.log('Attempting to login with:', credentials.email);
+        
+        // Use axios directly for more control
+        const baseUrl = api.defaults.baseURL || '';
+        const url = `${baseUrl}/api/auth/login/`;
+        console.log('Login URL:', url);
+        
+        const response = await axios({
+          method: 'post',
+          url: url,
+          data: {
+            email: credentials.email,
+            password: credentials.password
+          },
+          headers: {
+            'Content-Type': 'application/json',
+          }
         });
         
         const data = response.data;
+        console.log('Login successful:', data);
         
         // Store auth token in localStorage for subsequent requests
         if (data.token) {
@@ -47,7 +61,8 @@ export const authService = {
         }
         
         return data;
-      } catch (error) {
+      } catch (error: any) {
+        console.error('Login error details:', error.response?.data || error.message);
         // Clear any partial auth data on error
         localStorage.removeItem('token');
         currentUser = null;

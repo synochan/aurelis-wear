@@ -2,11 +2,25 @@ import axios from 'axios';
 
 // Determine base URL based on environment
 const getBaseUrl = () => {
-  // In production on Vercel, use the same domain without /api prefix
+  // In production on Vercel, use the deployed backend URL
   if (import.meta.env.PROD) {
+    // Use the API_URL environment variable or fallback to the frontend domain
+    const apiUrl = import.meta.env.VITE_API_URL;
+    if (apiUrl) {
+      console.log('Using configured API URL:', apiUrl);
+      return apiUrl;
+    }
+    
+    // If no API_URL is set, use the same domain as the frontend
+    // This works only if both frontend and backend are on the same domain
+    console.log('Using window.location.origin as API URL:', window.location.origin);
     return window.location.origin;
   }
-  return (import.meta.env.VITE_API_URL || 'http://localhost:8000');
+  
+  // In development, use the configured API URL or localhost
+  const devUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  console.log('Using development API URL:', devUrl);
+  return devUrl;
 };
 
 // Create base config for API calls
@@ -55,9 +69,13 @@ export const handleApiResponse = async (response: Response) => {
   return response.json();
 };
 
+// Calculate the API base URL
+const apiBaseUrl = getBaseUrl();
+console.log('API Base URL:', apiBaseUrl);
+
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: getBaseUrl(),
+  baseURL: apiBaseUrl,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -72,7 +90,8 @@ api.interceptors.request.use(
     }
     
     // Debug logging
-    console.log(`🚀 Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, config.data);
+    const fullUrl = `${config.baseURL}${config.url}`;
+    console.log(`🚀 Request: ${config.method?.toUpperCase()} ${fullUrl}`, config.data);
     return config;
   },
   (error) => Promise.reject(error)

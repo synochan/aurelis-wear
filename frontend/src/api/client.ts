@@ -3,20 +3,38 @@ import axios from 'axios';
 // Get the API URL with fallback
 const getApiUrl = () => {
   try {
-    // In production on Vercel, use the same domain without /api prefix
+    // In production on Vercel, use the deployed backend URL
     if (import.meta.env.PROD) {
-      return window.location.origin;
+      // Use the API_URL environment variable or fallback to the frontend domain
+      const apiUrl = import.meta.env.VITE_API_URL;
+      if (apiUrl) {
+        console.log('[client] Using configured API URL:', apiUrl);
+        return apiUrl;
+      }
+      
+      // If no API_URL is set, use the backend domain directly
+      const backendUrl = 'https://aurelis-wear-api.vercel.app';
+      console.log('[client] Using backend URL:', backendUrl);
+      return backendUrl;
     }
-    return import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    
+    // In development, use the configured API URL or localhost
+    const devUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    console.log('[client] Using development API URL:', devUrl);
+    return devUrl;
   } catch (error) {
     console.warn('Environment variables not available, using default API URL');
     return 'http://localhost:8000';
   }
 };
 
+// Calculate API base URL once
+const apiBaseUrl = getApiUrl();
+console.log('[client] API Base URL:', apiBaseUrl);
+
 // Create axios instance
 export const apiClient = axios.create({
-  baseURL: getApiUrl(),
+  baseURL: apiBaseUrl,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -28,7 +46,8 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     // Log requests in development
-    console.debug(`API Request: ${config.method?.toUpperCase()} ${config.url}`, 
+    const fullUrl = `${config.baseURL}${config.url}`;
+    console.debug(`[client] API Request: ${config.method?.toUpperCase()} ${fullUrl}`, 
       config.params || {}, config.data || {});
     
     const token = localStorage.getItem('token');
@@ -38,7 +57,7 @@ apiClient.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error('API request error:', error);
+    console.error('[client] API request error:', error);
     return Promise.reject(error);
   }
 );
@@ -47,7 +66,7 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => {
     // Log successful responses in development
-    console.debug(`API Response: ${response.status}`, response.data);
+    console.debug(`[client] API Response: ${response.status}`, response.data);
     return response;
   },
   (error) => {
@@ -55,12 +74,12 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       // Clear token on authentication errors
       localStorage.removeItem('token');
-      console.warn('Authentication token expired or invalid');
+      console.warn('[client] Authentication token expired or invalid');
       // We could redirect to login here if needed
     }
     
     // Log all API errors
-    console.error('API response error:', {
+    console.error('[client] API response error:', {
       status: error.response?.status,
       url: error.config?.url,
       method: error.config?.method,

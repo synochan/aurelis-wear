@@ -36,16 +36,16 @@ try:
     # Vercel serverless handler
     class handler(BaseHTTPRequestHandler):
         def do_GET(self):
-            self.handle_request()
+            self.handle_request('GET')
             
         def do_POST(self):
-            self.handle_request()
+            self.handle_request('POST')
             
         def do_PUT(self):
-            self.handle_request()
+            self.handle_request('PUT')
             
         def do_DELETE(self):
-            self.handle_request()
+            self.handle_request('DELETE')
             
         def do_OPTIONS(self):
             # Handle preflight CORS requests
@@ -56,17 +56,27 @@ try:
             self.send_header('Access-Control-Max-Age', '86400')  # 24 hours
             self.end_headers()
             
-        def handle_request(self):
+        def handle_request(self, method=None):
             try:
+                # Use the provided method or fallback to the original request method
+                request_method = method or self.command
+                
                 # Fix path for Django
                 original_path = self.path
                 path_info = original_path
                 
                 # Debug path handling
                 print(f"Original request path: {original_path}")
+                print(f"Request method: {request_method}")
                 
+                # Handle auth paths specially to ensure they work correctly
+                if '/auth/login' in original_path or '/auth/register' in original_path:
+                    # Make sure the path starts with /api for auth endpoints
+                    if not path_info.startswith('/api'):
+                        path_info = f'/api{path_info}'
+                    print(f"Special handling for auth endpoint: {path_info}")
                 # Keep /api prefix if present, otherwise add it (except for root path)
-                if not path_info.startswith('/api') and path_info != '/':
+                elif not path_info.startswith('/api') and path_info != '/':
                     path_info = f'/api{path_info}'
                 
                 # Handle root path
@@ -80,11 +90,18 @@ try:
                 request_body = self.rfile.read(content_length) if content_length > 0 else b''
                 
                 # Log request info
-                print(f"Request: {self.command} {path_info}")
+                print(f"Request: {request_method} {path_info}")
                 print(f"Headers: {dict(self.headers)}")
                 if request_body and content_length < 1000:  # Don't log large bodies
                     try:
-                        print(f"Body: {request_body.decode('utf-8')}")
+                        body_str = request_body.decode('utf-8')
+                        print(f"Body: {body_str}")
+                        # Try to parse JSON for better logging
+                        try:
+                            body_json = json.loads(body_str)
+                            print(f"Body (parsed): {json.dumps(body_json, indent=2)}")
+                        except:
+                            pass
                     except:
                         print(f"Body: (binary data, {len(request_body)} bytes)")
                 
@@ -97,13 +114,14 @@ try:
                     'wsgi.multiprocess': False,
                     'wsgi.run_once': False,
                     'wsgi.url_scheme': 'https',
-                    'REQUEST_METHOD': self.command,
+                    'REQUEST_METHOD': request_method,  # Use the explicitly provided method
                     'PATH_INFO': path_info,
                     'QUERY_STRING': self.path.split('?')[1] if '?' in self.path else '',
                     'CONTENT_TYPE': self.headers.get('Content-Type', ''),
                     'CONTENT_LENGTH': str(content_length),
                     'SERVER_NAME': 'vercel',
                     'SERVER_PORT': '443',
+                    'HTTP_HOST': self.headers.get('Host', 'vercel.app'),
                 }
                 
                 # Add HTTP headers to the environment
@@ -150,7 +168,14 @@ try:
                 print(f"Response headers: {response_headers}")
                 if len(response_body) < 1000:  # Don't log large responses
                     try:
-                        print(f"Response body: {response_body.decode('utf-8')}")
+                        resp_str = response_body.decode('utf-8')
+                        print(f"Response body: {resp_str}")
+                        # Try to parse JSON for better logging
+                        try:
+                            resp_json = json.loads(resp_str)
+                            print(f"Response body (parsed): {json.dumps(resp_json, indent=2)}")
+                        except:
+                            pass
                     except:
                         print(f"Response body: (binary data, {len(response_body)} bytes)")
                     
@@ -170,7 +195,7 @@ try:
                     "message": "A server error has occurred",
                     "details": str(e),
                     "path": self.path,
-                    "method": self.command
+                    "method": request_method if 'request_method' in locals() else self.command
                 }
                 
                 # In debug mode, add more information
