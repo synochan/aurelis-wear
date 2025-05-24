@@ -61,16 +61,35 @@ export const authService = {
         // Generate username from email (use part before @)
         const username = userData.email.split('@')[0];
         
-        const response = await api.post('/api/auth/register/', {
+        console.log('Registering with username:', username);
+        
+        const registerData = {
           username: username,
           email: userData.email,
           password: userData.password,
           password2: userData.password, // Confirm password is required
           first_name: userData.firstName,
           last_name: userData.lastName
+        };
+        
+        console.log('Registration data:', registerData);
+        
+        // Use axios directly for more control
+        const baseUrl = api.defaults.baseURL || '';
+        const url = `${baseUrl}/api/auth/register/`;
+        console.log('Registration URL:', url);
+        
+        const response = await axios({
+          method: 'post',
+          url: url,
+          data: registerData,
+          headers: {
+            'Content-Type': 'application/json',
+          }
         });
         
         const data = response.data;
+        console.log('Registration successful:', data);
         
         // Store auth token in localStorage for subsequent requests
         if (data.token) {
@@ -80,7 +99,8 @@ export const authService = {
         }
         
         return data;
-      } catch (error) {
+      } catch (error: any) {
+        console.error('Registration error details:', error.response?.data || error.message);
         // Clear any partial auth data on error
         localStorage.removeItem('token');
         currentUser = null;
