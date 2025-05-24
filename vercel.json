@@ -17,7 +17,7 @@
     }
   },
   "env": {
-    "DATABASE_URL": "postgresql://aurelis_owner:npg_z8KYB6VpXPbd@ep-shy-sun-a1wfphe1-pooler.ap-southeast-1.aws.neon.tech/aurelis?sslmode=require",
+    "DATABASE_URL": "postgresql://aurelis_owner:npg_tmeoQ63kljNh@ep-icy-resonance-a12upm7n-pooler.ap-southeast-1.aws.neon.tech/aurelis?sslmode=require",
     "PYTHONPATH": "${PYTHONPATH}:/vercel/path0"
   },
   "headers": [
