@@ -112,7 +112,7 @@ const Account = () => {
     try {
       // Call an API endpoint to change password
       // (This endpoint needs to be implemented in the backend)
-      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/auth/password/change/`, {
+      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/'}/auth/password/change/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
