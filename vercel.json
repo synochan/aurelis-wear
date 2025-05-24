@@ -6,15 +6,11 @@
     {
       "source": "/api/:path*",
       "destination": "https://aurelis-wear-api.vercel.app/:path*"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-      "dest": "https://aurelis-wear-api.vercel.app/$1"
     },
-    { "src": "/(.*)", "dest": "/index.html" }
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
