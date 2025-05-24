@@ -4,7 +4,7 @@
   "description": "Aurelis Wear E-commerce Platform",
   "private": true,
   "scripts": {
-    "build": "node api/init.js && cd frontend && npm install && npm run build",
+    "build": "cd frontend && npm install && npm run build",
     "dev": "cd frontend && npm run dev",
     "start": "cd frontend && npm run preview"
   },
