@@ -3,10 +3,23 @@
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "/api"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
   ],
+  "functions": {
+    "api/index.py": {
+      "runtime": "python3.9"
+    }
+  },
+  "env": {
+    "DATABASE_URL": "postgresql://aurelis_owner:npg_z8KYB6VpXPbd@ep-shy-sun-a1wfphe1-pooler.ap-southeast-1.aws.neon.tech/aurelis?sslmode=require",
+    "PYTHONPATH": "${PYTHONPATH}:/vercel/path0"
+  },
   "headers": [
     {
       "source": "/(.*)",

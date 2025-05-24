@@ -3,6 +3,10 @@ import axios from 'axios';
 // Get the API URL with fallback
 const getApiUrl = () => {
   try {
+    // In production on Vercel, use the same domain
+    if (import.meta.env.PROD) {
+      return window.location.origin;
+    }
     return import.meta.env.VITE_API_URL || 'http://localhost:8000';
   } catch (error) {
     console.warn('Environment variables not available, using default API URL');

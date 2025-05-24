@@ -1,0 +1,23 @@
+{
+  "builds": [
+    {
+      "src": "wsgi.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.9"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "wsgi.py"
+    }
+  ],
+  "env": {
+    "PYTHONPATH": "${PYTHONPATH}:/vercel/path0",
+    "DATABASE_URL": "postgresql://aurelis_owner:npg_z8KYB6VpXPbd@ep-shy-sun-a1wfphe1-pooler.ap-southeast-1.aws.neon.tech/aurelis?sslmode=require"
+  },
+  "buildCommand": "pip install -r requirements.txt && python manage.py migrate"
+} 

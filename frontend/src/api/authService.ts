@@ -26,11 +26,17 @@ export interface AuthResponse {
 // Store user data in memory
 let currentUser: any = null;
 
+// Helper function to get the correct API path based on environment
+const getApiPath = (path: string): string => {
+  // Always include /api prefix for consistency
+  return `/api${path}`;
+};
+
 export const authService = {
     // Login user
     login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
       try {
-        const response = await api.post('/auth/login/', {
+        const response = await api.post(getApiPath('/auth/login/'), {
           email: credentials.email,
           password: credentials.password
         });
@@ -59,7 +65,7 @@ export const authService = {
         // Generate username from email (use part before @)
         const username = userData.email.split('@')[0];
         
-        const response = await api.post('/auth/register/', {
+        const response = await api.post(getApiPath('/auth/register/'), {
           username: username,
           email: userData.email,
           password: userData.password,
@@ -109,7 +115,7 @@ export const authService = {
       }
       
       try {
-        const response = await api.get('/auth/user/');
+        const response = await api.get(getApiPath('/auth/user/'));
         
         const data = response.data;
         // Cache the user data
@@ -136,7 +142,7 @@ export const authService = {
           throw new Error('Not authenticated');
         }
         
-        const response = await api.patch('/auth/user/', profileData);
+        const response = await api.patch(getApiPath('/auth/user/'), profileData);
         
         const data = response.data;
         // Update the cached user data
