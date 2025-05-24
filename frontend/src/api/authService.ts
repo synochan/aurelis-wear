@@ -78,6 +78,7 @@ export const authService = {
         
         console.log('Registering with username:', username);
         
+        // Match the field names expected by the backend handler
         const registerData = {
           username: username,
           email: userData.email,

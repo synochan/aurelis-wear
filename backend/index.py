@@ -23,6 +23,13 @@ try:
     import django
     django.setup()
     
+    # Import Django components needed for direct handling
+    from django.contrib.auth.models import User
+    from django.contrib.auth import authenticate
+    from rest_framework.authtoken.models import Token
+    from authentication.serializers import LoginSerializer, RegisterSerializer
+    from rest_framework import status
+    
     # Import WSGI application
     from wsgi import application as django_app
     import io
@@ -55,6 +62,144 @@ try:
             self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
             self.send_header('Access-Control-Max-Age', '86400')  # 24 hours
             self.end_headers()
+        
+        def send_cors_headers(self):
+            """Add CORS headers to the response"""
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+            
+        def send_json_response(self, status_code, data):
+            """Send a JSON response with appropriate headers"""
+            self.send_response(status_code)
+            self.send_header('Content-Type', 'application/json')
+            self.send_cors_headers()
+            self.end_headers()
+            self.wfile.write(json.dumps(data).encode('utf-8'))
+            
+        def handle_auth_login(self):
+            """Handle direct login requests"""
+            try:
+                # Read request body
+                content_length = int(self.headers.get('Content-Length', 0))
+                request_body = self.rfile.read(content_length) if content_length > 0 else b''
+                
+                # Parse JSON body
+                body_data = json.loads(request_body.decode('utf-8'))
+                print(f"Login request data: {body_data}")
+                
+                # Get username/email and password
+                email = body_data.get('email')
+                password = body_data.get('password')
+                
+                if not email or not password:
+                    return self.send_json_response(400, {
+                        "detail": "Email and password are required"
+                    })
+                
+                # Find user by email
+                try:
+                    user = User.objects.get(email=email)
+                except User.DoesNotExist:
+                    return self.send_json_response(401, {
+                        "detail": "No user found with this email address."
+                    })
+                
+                # Authenticate user
+                authenticated_user = authenticate(username=user.username, password=password)
+                
+                if not authenticated_user:
+                    return self.send_json_response(401, {
+                        "detail": "Invalid credentials."
+                    })
+                
+                # Get or create token
+                token, created = Token.objects.get_or_create(user=authenticated_user)
+                
+                # Send successful response
+                return self.send_json_response(200, {
+                    "token": token.key,
+                    "user": {
+                        "id": authenticated_user.id,
+                        "email": authenticated_user.email,
+                        "firstName": authenticated_user.first_name,
+                        "lastName": authenticated_user.last_name,
+                    }
+                })
+                
+            except Exception as e:
+                print(f"Login error: {str(e)}")
+                traceback.print_exc()
+                return self.send_json_response(500, {
+                    "detail": f"Server error: {str(e)}"
+                })
+                
+        def handle_auth_register(self):
+            """Handle direct register requests"""
+            try:
+                # Read request body
+                content_length = int(self.headers.get('Content-Length', 0))
+                request_body = self.rfile.read(content_length) if content_length > 0 else b''
+                
+                # Parse JSON body
+                body_data = json.loads(request_body.decode('utf-8'))
+                print(f"Register request data: {body_data}")
+                
+                # Extract registration data
+                username = body_data.get('username')
+                email = body_data.get('email')
+                password = body_data.get('password')
+                password2 = body_data.get('password2')
+                first_name = body_data.get('first_name')
+                last_name = body_data.get('last_name')
+                
+                # Validate required fields
+                if not username or not email or not password:
+                    return self.send_json_response(400, {
+                        "detail": "Username, email and password are required"
+                    })
+                
+                # Validate password match
+                if password != password2:
+                    return self.send_json_response(400, {
+                        "password2": "Password fields didn't match."
+                    })
+                
+                # Check if email exists
+                if User.objects.filter(email=email).exists():
+                    return self.send_json_response(400, {
+                        "email": "A user with this email already exists."
+                    })
+                
+                # Create user
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password,
+                    first_name=first_name,
+                    last_name=last_name
+                )
+                
+                # Create token
+                token, created = Token.objects.get_or_create(user=user)
+                
+                # Send successful response
+                return self.send_json_response(201, {
+                    "token": token.key,
+                    "user": {
+                        "id": user.id,
+                        "email": user.email,
+                        "firstName": user.first_name,
+                        "lastName": user.last_name,
+                    }
+                })
+                
+            except Exception as e:
+                print(f"Registration error: {str(e)}")
+                traceback.print_exc()
+                return self.send_json_response(500, {
+                    "detail": f"Server error: {str(e)}"
+                })
             
         def handle_request(self, method=None):
             try:
@@ -68,6 +213,12 @@ try:
                 # Debug path handling
                 print(f"Original request path: {original_path}")
                 print(f"Request method: {request_method}")
+                
+                # Direct handling for auth endpoints to bypass Django routing issues
+                if request_method == 'POST' and '/auth/login' in original_path:
+                    return self.handle_auth_login()
+                elif request_method == 'POST' and '/auth/register' in original_path:
+                    return self.handle_auth_register()
                 
                 # Handle auth paths specially to ensure they work correctly
                 if '/auth/login' in original_path or '/auth/register' in original_path:
