@@ -44,7 +44,7 @@ const Checkout = () => {
   useEffect(() => {
     const initializeStripe = async () => {
       try {
-        const response = await api.get('/payments/config/');
+        const response = await api.get('api/payments/config/');
         const publishableKey = response.data.publishableKey;
         
         if (!stripePromise && publishableKey) {
@@ -131,14 +131,14 @@ Phone: ${shippingInfo.phone}
         total_price: totalPrice,
       };
       
-      const response = await api.post('/orders/', orderData);
+      const response = await api.post('api/orders/', orderData);
       
       setOrderId(response.data.id);
       setShippingDetails(shippingInfo);
       setStep('payment');
       
       // Create a payment intent
-      const paymentResponse = await api.post('/payments/create-payment-intent/', {
+      const paymentResponse = await api.post('api/payments/create-payment-intent/', {
         order_id: response.data.id,
       });
       

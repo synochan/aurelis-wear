@@ -14,7 +14,7 @@ const OrderConfirmation = () => {
   useEffect(() => {
     const fetchOrderDetails = async () => {
       try {
-        const response = await api.get(`/orders/${orderId}/`);
+        const response = await api.get(`api/orders/${orderId}/`);
         setOrderDetails(response.data);
       } catch (err: any) {
         console.error('Failed to fetch order details:', err);

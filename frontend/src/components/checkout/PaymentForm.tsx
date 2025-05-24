@@ -55,7 +55,7 @@ const PaymentForm = ({ onSuccess, onError, clientSecret }: PaymentFormProps) => 
         onError(result.error.message || 'Payment failed');
       } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
         // Call the API to confirm the payment on the server
-        await api.post('/payments/confirm-payment/', {
+        await api.post('api/payments/confirm-payment/', {
           payment_intent_id: result.paymentIntent.id,
         });
 
