@@ -129,11 +129,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Enhanced CORS settings
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all origins in development
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
-    os.environ.get('FRONTEND_URL', 'https://aurelis-wear-shop.vercel.app'),
+    'https://aurelis-wear.vercel.app',
+    os.environ.get('FRONTEND_URL', 'https://aurelis-wear.vercel.app'),
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
