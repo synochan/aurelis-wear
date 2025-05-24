@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "node api/init.js && cd frontend && npm install && npm run build",
+  "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
-  "installCommand": "npm install -g node-gyp",
+  "installCommand": "pip install -r api/requirements.txt",
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -15,7 +15,7 @@
   ],
   "env": {
     "DATABASE_URL": "postgresql://aurelis_owner:npg_tmeoQ63kljNh@ep-icy-resonance-a12upm7n-pooler.ap-southeast-1.aws.neon.tech/aurelis?sslmode=require",
-    "PYTHONPATH": "./python_packages:${PYTHONPATH}:/vercel/path0:/vercel/path0/backend",
+    "PYTHONPATH": "${PYTHONPATH}:/var/task:/var/task/backend",
     "DJANGO_SETTINGS_MODULE": "backend.settings",
     "DEBUG": "True",
     "ALLOWED_HOSTS": ".vercel.app,aurelis-wear.vercel.app",
@@ -23,7 +23,7 @@
   },
   "functions": {
     "api/index.py": {
-      "includeFiles": "backend/**,python_packages/**",
+      "includeFiles": "backend/**",
       "excludeFiles": "backend/db.sqlite3",
       "memory": 1024,
       "maxDuration": 10,

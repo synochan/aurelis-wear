@@ -3,38 +3,18 @@ import sys
 import traceback
 from http.server import BaseHTTPRequestHandler
 
-# Add backend folder and custom packages to sys.path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-backend_dir = os.path.join(parent_dir, 'backend')
-custom_packages_dir = os.path.join(parent_dir, 'python_packages')
-
-# Print debugging information
-print(f"Current directory: {current_dir}")
-print(f"Backend directory: {backend_dir}")
-print(f"Custom packages directory: {custom_packages_dir}")
+# Print system path for debugging
 print(f"Initial sys.path: {sys.path}")
-
-# Insert paths in the correct order
-if os.path.exists(custom_packages_dir):
-    sys.path.insert(0, custom_packages_dir)
-    print(f"Added custom packages directory to sys.path")
-
-sys.path.insert(0, backend_dir)
-sys.path.insert(0, parent_dir)
-print(f"Updated sys.path: {sys.path}")
-
-# List directories to verify
-if os.path.exists(custom_packages_dir):
-    print(f"Contents of custom packages directory:")
-    print(os.listdir(custom_packages_dir))
-
-print(f"Contents of backend directory:")
-if os.path.exists(backend_dir):
-    print(os.listdir(backend_dir))
 
 # Set Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
+
+# Add paths to sys.path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
+sys.path.insert(0, os.path.join(parent_dir, 'backend'))
+print(f"Updated sys.path: {sys.path}")
 
 try:
     print("Attempting to import Django...")
@@ -42,7 +22,6 @@ try:
     print(f"Django imported successfully: {django.__version__}")
     
     from django.core.wsgi import get_wsgi_application
-    from django.core.handlers.wsgi import WSGIRequest
     import io
 
     # Create the WSGI application
