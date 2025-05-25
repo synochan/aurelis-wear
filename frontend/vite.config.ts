@@ -29,15 +29,13 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
   },
   resolve: {
-    alias: [
-      { find: '@', replacement: path.resolve(__dirname, 'src') },
-      { find: 'src', replacement: path.resolve(__dirname, 'src') },
-    ],
-    extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json'],
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
   },
   optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom'],
     force: true,
-    entries: ['src/**/*.tsx', 'src/**/*.ts']
   },
   esbuild: {
     logOverride: { 'this-is-undefined-in-esm': 'silent' }

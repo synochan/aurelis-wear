@@ -1,13 +1,8 @@
 {
-  "version": 2,
+  "framework": "vite",
   "buildCommand": "cd frontend && npm install && npm run build:vercel",
   "outputDirectory": "frontend/dist",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "env": {
-    "VITE_API_URL": "https://aurelis-wear-api.onrender.com/api",
-    "VITE_SKIP_TS_CHECK": "true"
-  }
+    { "source": "/api/:path*", "destination": "https://aurelis-wear-api.onrender.com/api/:path*" }
+  ]
 } 
