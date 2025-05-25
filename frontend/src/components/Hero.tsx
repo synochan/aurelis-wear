@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -39,7 +38,7 @@ const Hero = () => {
             <div className="absolute inset-0 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-transparent z-10"></div>
               <img 
-                src=".\public\t1.jpg" 
+                src="/t1.jpg" 
                 alt="Aurelis Apparel" 
                 className="w-full h-full object-cover object-center"
               />
