@@ -71,7 +71,7 @@ export const cartService = {
   // Get user's cart
   async getCart(): Promise<CartResponse> {
     try {
-      const response = await apiClient.get('/api/cart/');
+      const response = await apiClient.get('/cart/');
       return response.data;
     } catch (error) {
       throw handleApiError(error);
@@ -82,7 +82,7 @@ export const cartService = {
   async addToCart(item: AddToCartItem): Promise<CartResponse> {
     try {
       console.log('Adding to cart:', item);
-      const response = await apiClient.post('/api/cart/items/', item);
+      const response = await apiClient.post('/cart/items/', item);
       return response.data;
     } catch (error) {
       throw handleApiError(error);
@@ -93,7 +93,7 @@ export const cartService = {
   async updateCartItem(itemId: number, quantity: number): Promise<CartResponse> {
     try {
       console.log(`Updating cart item ${itemId} to quantity ${quantity}`);
-      const response = await apiClient.patch(`/api/cart/items/${itemId}/`, {
+      const response = await apiClient.patch(`/cart/items/${itemId}/`, {
         quantity
       });
       return response.data;
@@ -106,7 +106,7 @@ export const cartService = {
   async removeFromCart(itemId: number): Promise<CartResponse> {
     try {
       console.log(`Removing cart item ${itemId}`);
-      const response = await apiClient.delete(`/api/cart/items/${itemId}/`);
+      const response = await apiClient.delete(`/cart/items/${itemId}/`);
       return response.data;
     } catch (error) {
       throw handleApiError(error);
@@ -117,7 +117,7 @@ export const cartService = {
   async clearCart(): Promise<CartResponse> {
     try {
       console.log('Clearing cart');
-      const response = await apiClient.post('/api/cart/clear/');
+      const response = await apiClient.post('/cart/clear/');
       return response.data;
     } catch (error) {
       throw handleApiError(error);

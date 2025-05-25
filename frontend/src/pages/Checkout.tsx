@@ -5,12 +5,10 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { useCart } from '@/api/hooks';
+import { useCart, api } from '@/api';
 import ShippingForm from '@/components/checkout/ShippingForm';
 import PaymentForm from '@/components/checkout/PaymentForm';
 import OrderSummary from '@/components/checkout/OrderSummary';
-import api from '@/api';
-import { useShippingForm, usePaymentForm } from '@/components/checkout/hooks';
 
 // Initialize Stripe (we'll load the publishable key from the API)
 let stripePromise: Promise<any> | null = null;
@@ -46,7 +44,7 @@ const Checkout = () => {
   useEffect(() => {
     const initializeStripe = async () => {
       try {
-        const response = await api.get('/api/payments/config/');
+        const response = await api.get('/payments/config/');
         const publishableKey = response.data.publishableKey;
         
         if (!stripePromise && publishableKey) {
@@ -106,7 +104,7 @@ const Checkout = () => {
   // Get Stripe configuration
   const fetchStripeConfig = async () => {
     try {
-      const response = await api.get('/api/payments/config/');
+      const response = await api.get('/payments/config/');
       setStripeConfig(response.data);
       return response.data;
     } catch (error) {
@@ -123,7 +121,7 @@ const Checkout = () => {
   // Create order in the backend
   const createOrder = async (orderData: any) => {
     try {
-      const response = await api.post('/api/orders/', orderData);
+      const response = await api.post('/orders/', orderData);
       return response.data;
     } catch (error: any) {
       console.error('Error creating order:', error);
@@ -155,7 +153,7 @@ const Checkout = () => {
   // Create payment intent
   const createPaymentIntent = async (orderId: number, amount: number) => {
     try {
-      const paymentResponse = await api.post('/api/payments/create-payment-intent/', {
+      const paymentResponse = await api.post('/payments/create-payment-intent/', {
         order_id: orderId,
         amount: amount
       });

@@ -1,6 +1,6 @@
 # Backend-related files (not needed for frontend deployment)
 backend/
-api/
+/api/
 __pycache__/
 *.py
 *.pyc

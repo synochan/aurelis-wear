@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
-import api from '@/api';
+import { api } from '@/api';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 
@@ -59,7 +59,7 @@ const PaymentForm = ({ onSuccess, onError, clientSecret, orderId }: PaymentFormP
         onError(result.error.message || 'Payment failed');
       } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
         // Call the API to confirm the payment on the server
-        await api.post('/api/payments/confirm-payment/', {
+        await api.post('/payments/confirm-payment/', {
           payment_intent_id: result.paymentIntent.id,
           order_id: orderId
         });

@@ -12,17 +12,17 @@ const getApiUrl = () => {
     // In production, use the dedicated Render backend URL
     if (import.meta.env.PROD && !window.location.hostname.includes('localhost')) {
       // Use a direct, hardcoded URL to ensure we always hit the backend server
-      const backendUrl = 'https://aurelis-wear-api.onrender.com/api';
+      const backendUrl = 'https://aurelis-wear-api.onrender.com';
       console.log('[client] Using hardcoded backend URL:', backendUrl);
       return backendUrl;
     }
     
     // Default to localhost
     console.log('[client] Using localhost API URL');
-    return 'http://localhost:8000/api';
+    return 'http://localhost:8000';
   } catch (error) {
     console.warn('Environment variables not available, using default API URL');
-    return 'http://localhost:8000/api';
+    return 'http://localhost:8000';
   }
 };
 
@@ -32,19 +32,13 @@ console.log('[client] API Base URL:', apiBaseUrl);
 
 // Helper to ensure all API paths have the /api prefix
 const ensureApiPath = (path: string) => {
-  // Check if the API base URL already includes '/api'
-  const baseHasApiPath = apiBaseUrl.endsWith('/api');
-  
-  // If base URL already has '/api' suffix, don't add it again
-  if (baseHasApiPath) {
+  // If the path already starts with /api, don't modify it
+  if (path.startsWith('/api/') || path.startsWith('api/')) {
     return path.startsWith('/') ? path : `/${path}`;
   }
   
-  // Otherwise follow the original logic
-  if (!path.startsWith('/api') && !path.startsWith('api/')) {
-    return `/api${path.startsWith('/') ? path : `/${path}`}`;
-  }
-  return path;
+  // Otherwise, add the /api prefix
+  return `/api${path.startsWith('/') ? path : `/${path}`}`;
 };
 
 // Create axios instance
