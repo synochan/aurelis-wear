@@ -22,4 +22,18 @@ __pycache__
 *.pyc
 
 # Database
-db.sqlite3 
+db.sqlite3
+
+# When deploying a subproject, ignore the root vercel.json
+/vercel.json
+
+# Ignore most directories to prevent deploying both frontend and backend 
+# But allow essential root files
+frontend/
+backend/
+api/
+.git/
+
+# Exceptions - these files are needed
+!package.json
+!index.html 

@@ -1,0 +1,12 @@
+{
+  "name": "aurelis-wear-api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "vercel-build": "bash ./vercel-build.sh"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "python": "3.9.0"
+  }
+} 

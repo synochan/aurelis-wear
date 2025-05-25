@@ -2,21 +2,21 @@
   "version": 2,
   "builds": [
     {
-      "src": "wsgi.py",
-      "use": "@vercel/python",
-      "config": { "maxLambdaSize": "15mb" }
+      "src": "index.py",
+      "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "wsgi.py"
+      "dest": "index.py"
     }
   ],
   "env": {
     "DJANGO_SETTINGS_MODULE": "backend.settings",
     "DEBUG": "False",
     "ALLOWED_HOSTS": ".vercel.app,aurelis-wear-api.vercel.app,localhost,127.0.0.1",
-    "FRONTEND_URL": "https://aurelis-wear.vercel.app"
+    "FRONTEND_URL": "https://aurelis-wear.vercel.app",
+    "PYTHON_VERSION": "3.9"
   }
 }
