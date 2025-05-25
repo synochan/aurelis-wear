@@ -7,7 +7,10 @@
     "build": "cd frontend && npm install && npm run build",
     "dev": "cd frontend && npm run dev",
     "start": "cd frontend && npm run preview",
-    "vercel-build": "bash vercel-build.sh && cd frontend && npm install && npm run build"
+    "vercel-build": "bash vercel-build.sh && cd frontend && npm install && npm run build",
+    "deploy": "node deploy.js",
+    "deploy:frontend": "node deploy-frontend.js",
+    "deploy:backend": "node deploy-backend.js"
   },
   "engines": {
     "node": ">=18.0.0",

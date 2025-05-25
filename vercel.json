@@ -19,7 +19,8 @@
     { "source": "/(.*)", "destination": "/frontend/dist/index.html" }
   ],
   "env": {
-    "PYTHON_VERSION": "3.9"
+    "PYTHON_VERSION": "3.9",
+    "VITE_API_URL": "https://aurelis-wear-api.vercel.app"
   },
   "headers": [
     {

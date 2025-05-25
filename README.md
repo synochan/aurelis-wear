@@ -11,6 +11,32 @@ The project is split into two deployable parts:
 
 ## Deployment
 
+The project includes deployment scripts to simplify the process of deploying both the frontend and backend to Vercel.
+
+### Automated Deployment
+
+To deploy both frontend and backend in one step:
+
+```bash
+node deploy.js
+```
+
+This script will:
+1. Deploy the backend API to `aurelis-wear-api.vercel.app`
+2. Deploy the frontend to `aurelis-wear.vercel.app`
+
+### Manual Deployment
+
+You can also deploy each part separately:
+
+```bash
+# Backend deployment only
+node deploy-backend.js
+
+# Frontend deployment only  
+node deploy-frontend.js
+```
+
 ### Backend Deployment
 
 The backend is deployed to Vercel with the following configuration:
@@ -19,7 +45,7 @@ The backend is deployed to Vercel with the following configuration:
 Domain: https://aurelis-wear-api.vercel.app
 ```
 
-To deploy the backend:
+To deploy the backend manually:
 
 1. Navigate to the backend directory
 2. Create a Vercel project with the backend directory as the root
@@ -34,7 +60,7 @@ The frontend is deployed to Vercel with the following configuration:
 Domain: https://aurelis-wear.vercel.app
 ```
 
-To deploy the frontend:
+To deploy the frontend manually:
 
 1. Navigate to the frontend directory
 2. Create a separate Vercel project with the frontend directory as the root
@@ -70,12 +96,13 @@ Required environment variables:
 - `DJANGO_SETTINGS_MODULE`: Set to `backend.settings`
 - `DEBUG`: Set to `True` for development, `False` for production
 - `ALLOWED_HOSTS`: Comma-separated list of allowed hosts
+- `FRONTEND_URL`: URL of the frontend (set to `https://aurelis-wear.vercel.app` in production)
 
 ### Frontend
 
 Required environment variables:
 
-- `VITE_API_URL`: URL of the backend API
+- `VITE_API_URL`: URL of the backend API (set to `https://aurelis-wear-api.vercel.app` in production)
 
 ## Features
 

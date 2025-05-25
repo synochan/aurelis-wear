@@ -3,17 +3,13 @@
   "builds": [
     { "src": "index.py", "use": "@vercel/python" }
   ],
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "index.py" },
-    { "source": "/(.*)", "destination": "index.py" }
+  "routes": [
+    { "src": "/(.*)", "dest": "/index.py" }
   ],
   "env": {
-    "DATABASE_URL": "${DATABASE_URL}",
-    "DJANGO_SETTINGS_MODULE": "backend.settings",
-    "DEBUG": "False",
+    "PYTHON_VERSION": "3.9",
     "ALLOWED_HOSTS": ".vercel.app,aurelis-wear-api.vercel.app,localhost,127.0.0.1",
-    "FRONTEND_URL": "https://aurelis-wear.vercel.app",
-    "PYTHON_VERSION": "3.9"
+    "FRONTEND_URL": "https://aurelis-wear.vercel.app"
   },
   "headers": [
     {
