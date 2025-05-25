@@ -1,5 +1,5 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { useCart as useCartQuery, useAddToCart, useUpdateCartItem, useRemoveFromCart, useClearCart, authService, AddToCartItem } from '@/api';
+import { useCart as useCartQuery, useAddToCart, useUpdateCartItem, useRemoveFromCart, useClearCart, authService, type AddToCartItem } from '@/api/exports';
 import { useToast } from '@/hooks/use-toast';
 
 export interface CartItem {
