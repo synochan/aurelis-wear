@@ -4,19 +4,34 @@
     {
       "src": "wsgi.py",
       "use": "@vercel/python",
-      "config": { "maxLambdaSize": "15mb" }
+      "config": { 
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.9"
+      }
+    },
+    {
+      "src": "build_files.sh",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "staticfiles"
+      }
     }
   ],
   "routes": [
     {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
+    {
       "src": "/(.*)",
-      "dest": "wsgi.py"
+      "dest": "/wsgi.py"
     }
   ],
   "env": {
     "DJANGO_SETTINGS_MODULE": "backend.settings",
     "DEBUG": "False",
     "ALLOWED_HOSTS": ".vercel.app,aurelis-wear-api.vercel.app,localhost,127.0.0.1",
-    "FRONTEND_URL": "https://aurelis-wear.vercel.app"
+    "FRONTEND_URL": "https://aurelis-wear.vercel.app",
+    "PYTHON_VERSION": "3.9"
   }
 }
