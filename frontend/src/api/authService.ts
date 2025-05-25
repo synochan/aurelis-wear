@@ -29,10 +29,18 @@ let currentUser: any = null;
 
 // Get the backend URL
 const getBackendUrl = () => {
-  if (import.meta.env.PROD) {
+  // First check for a specific environment variable
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // In production on Vercel, use the dedicated backend URL
+  if (import.meta.env.PROD && !window.location.hostname.includes('localhost')) {
     return 'https://aurelis-wear-api.vercel.app';
   }
-  return import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  
+  // Default to localhost
+  return 'http://localhost:8000';
 };
 
 // Ensure path has /api prefix

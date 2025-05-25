@@ -2,18 +2,23 @@ import axios from 'axios';
 
 // Determine base URL based on environment
 const getBaseUrl = () => {
-  // In production on Vercel, always use the dedicated backend URL
-  if (import.meta.env.PROD) {
+  // First check for a specific environment variable
+  if (import.meta.env.VITE_API_URL) {
+    console.log('[config] Using configured API URL:', import.meta.env.VITE_API_URL);
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // In production on Vercel, use the dedicated backend URL
+  if (import.meta.env.PROD && !window.location.hostname.includes('localhost')) {
     // Use the hardcoded backend URL to ensure consistency
     const backendUrl = 'https://aurelis-wear-api.vercel.app';
     console.log('[config] Using hardcoded backend URL:', backendUrl);
     return backendUrl;
   }
   
-  // In development, use the configured API URL or localhost
-  const devUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-  console.log('[config] Using development API URL:', devUrl);
-  return devUrl;
+  // Default to localhost for any other case
+  console.log('[config] Using localhost API URL');
+  return 'http://localhost:8000';
 };
 
 // Helper to ensure all API paths have the /api prefix

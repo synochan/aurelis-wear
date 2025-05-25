@@ -22,7 +22,12 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-&a9!%yyl755&3nz&lvdz)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,.vercel.app').split(',')
+# Updated ALLOWED_HOSTS to ensure it accepts all Vercel domains and pattern formats
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.vercel.app,aurelis-wear-api.vercel.app').split(',')
+
+# Add wildcard pattern for Vercel preview deployments
+if '.vercel.app' in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.extend(['*.vercel.app', '*-git-*-*.vercel.app'])
 
 # Application definition
 

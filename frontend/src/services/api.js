@@ -1,7 +1,22 @@
 import axios from 'axios';
 
-// Use environment variable for API URL
-let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Get the API URL based on environment
+const getApiUrl = () => {
+  // First check for a specific environment variable
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // In production on Vercel, use the dedicated backend URL
+  if (import.meta.env.PROD && !window.location.hostname.includes('localhost')) {
+    return 'https://aurelis-wear-api.vercel.app';
+  }
+  
+  // Default to localhost
+  return 'http://localhost:8000';
+};
+
+let API_URL = getApiUrl();
 
 // Ensure API_URL doesn't have a trailing slash
 if (API_URL.endsWith('/')) {
