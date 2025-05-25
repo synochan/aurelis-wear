@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useRegister } from '@/api/hooks.ts';
+import { useRegister } from '@/api/hooks';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription 

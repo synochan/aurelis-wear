@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { apiClient } from './client.js';
 import { Product } from '@/components/ProductCard';
 
 export const productService = {
