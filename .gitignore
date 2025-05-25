@@ -23,6 +23,7 @@ var/
 .env
 .env.local
 .env.vercel
+.env.production
 
 # Django
 *.log
@@ -69,4 +70,8 @@ coverage
 # Keep environment template files
 !.env.example
 !frontend/.env.example
-!backend/.env.example 
+!backend/.env.example
+
+# Temporary scripts
+cleanup.ps1
+cleanup.sh 
