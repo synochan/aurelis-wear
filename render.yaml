@@ -23,6 +23,6 @@ services:
       - key: CORS_ALLOW_ALL_ORIGINS
         value: false
       - key: CORS_ALLOWED_ORIGINS
-        value: https://aurelis-wear.vercel.app,http://localhost:5173
+        value: https://aurelis-wear.vercel.app,http://localhost:5173,http://localhost:8080
 
   # Note: Using external Neon PostgreSQL database instead of provisioning a Render database 

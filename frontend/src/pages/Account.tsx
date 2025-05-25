@@ -8,8 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { useCurrentUser } from '@/api/hooks.ts';
-import { authService } from '@/api/authService.ts';
+import { useCurrentUser } from '@/api/hooks';
+import { authService } from '@/api/authService';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
 
