@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
-import api from '@/api/config';
+import api from '@/api';
 import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 
 interface PaymentFormProps {
   onSuccess: () => void;
