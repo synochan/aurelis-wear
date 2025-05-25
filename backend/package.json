@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "vercel-build": "pip install -r requirements.txt && python manage.py collectstatic --noinput"
+    "vercel-build": "bash ./vercel-build.sh"
   },
   "engines": {
     "node": ">=14.0.0",
