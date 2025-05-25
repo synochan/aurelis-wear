@@ -3,7 +3,8 @@
 # Install Python dependencies
 pip install -r requirements.txt
 
-# Collect static files
-python manage.py collectstatic --noinput
+# Create static directory if it doesn't exist
+mkdir -p static
 
+# Print debug information
 echo "Build completed successfully" 
