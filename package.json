@@ -1,27 +1,12 @@
 {
-  "name": "aurelis-wear",
-  "version": "1.0.0",
-  "description": "Aurelis Wear E-commerce Platform",
+  "name": "aurelis-wear-monorepo",
   "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
-    "build": "cd frontend && npm install && npm run build",
-    "dev": "cd frontend && npm run dev",
-    "start": "cd frontend && npm run preview",
-    "vercel-build": "bash vercel-build.sh && cd frontend && npm install && npm run build",
-    "deploy": "node deploy.js",
-    "deploy:frontend": "node deploy-frontend.js",
-    "deploy:backend": "node deploy-backend.js",
-    "verify-build": "node verify-build.js"
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
-  },
-  "dependencies": {
-    "child_process": "^1.0.2",
-    "fs": "^0.0.1-security",
-    "path": "^0.12.7"
-  },
-  "author": "",
-  "license": "ISC"
+    "vercel-build": "echo 'This is a monorepo - please deploy frontend and backend separately'"
+  }
 } 

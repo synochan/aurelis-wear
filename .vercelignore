@@ -22,4 +22,10 @@ __pycache__
 *.pyc
 
 # Database
-db.sqlite3 
+db.sqlite3
+
+# Ignore everything except vercel.json
+*
+!vercel.json
+
+# This ensures Vercel doesn't try to deploy both frontend and backend in a single project 
