@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { Product } from '../components/ProductCard';
+import { Product } from '@/components/ProductCard';
 
 export const productService = {
   // Get all products with optional filters

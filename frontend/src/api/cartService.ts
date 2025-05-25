@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { CartItem } from '../context/CartContext';
+import { CartItem } from '@/context/CartContext';
 import { authService } from './authService';
 
 // Type definitions

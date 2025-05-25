@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { productService, mapProductFromApi } from './productService';
+import { productService, mapProductFromApi, ProductResponse } from './productService';
 import { authService, LoginCredentials, RegisterData } from './authService';
 import { cartService, CartResponse, AddToCartItem } from './cartService';
-import { Product } from '../components/ProductCard';
-import { CartItem } from '../context/CartContext';
+import { Product } from '@/components/ProductCard';
+import { CartItem } from '@/context/CartContext';
 
 // Query keys
 export const queryKeys = {
