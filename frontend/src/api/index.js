@@ -6,4 +6,8 @@ export default api;
 export * from './hooks';
 export * from './authService';
 export * from './cartService';
-export * from './productService'; 
+export * from './productService';
+
+// Re-export hooks as a namespace as well for compatibility
+import * as hooks from './hooks';
+export { hooks }; 

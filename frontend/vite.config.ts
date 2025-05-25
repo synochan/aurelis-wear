@@ -21,7 +21,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['@radix-ui', '@tanstack/react-query'],
+          'ui-vendor': ['@tanstack/react-query'],
         },
       },
     },
