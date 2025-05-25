@@ -24,8 +24,14 @@ __pycache__
 # Database
 db.sqlite3
 
-# Ignore everything except vercel.json
-*
-!vercel.json
+# Ignore most directories to prevent deploying both frontend and backend 
+# But allow essential root files
+frontend/
+backend/
+api/
+.git/
 
-# This ensures Vercel doesn't try to deploy both frontend and backend in a single project 
+# Exceptions - these files are needed
+!package.json
+!index.html
+!vercel.json 
