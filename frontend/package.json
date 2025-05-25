@@ -9,7 +9,7 @@
     "build:dev": "vite build --mode development --outDir dist",
     "lint": "eslint .",
     "preview": "vite preview",
-    "vercel-build": "vite build --outDir dist --skipTypeCheck"
+    "vercel-build": "vite build --outDir dist"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
