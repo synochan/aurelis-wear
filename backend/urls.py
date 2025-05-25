@@ -23,6 +23,19 @@ def health_check(request):
         'environment': 'production' if not settings.DEBUG else 'development'
     })
 
+# Root health check
+def root_health_check(request):
+    """
+    Root endpoint that redirects to health check
+    """
+    return JsonResponse({
+        'status': 'healthy',
+        'message': 'Aurelis Wear API is running',
+        'api_version': '1.0',
+        'environment': 'production' if not settings.DEBUG else 'development',
+        'documentation': '/api/'
+    })
+
 # Create a router for viewsets
 router = DefaultRouter()
 router.register(r'products', ProductViewSet, basename='product')
@@ -32,6 +45,7 @@ router.register(r'cart-items', CartItemViewSet, basename='cart-item')
 router.register(r'orders', OrderViewSet, basename='order')
 
 urlpatterns = [
+    path('', root_health_check, name='root'),
     path('admin/', admin.site.urls),
     path('api/', include([
         path('', include(router.urls)),

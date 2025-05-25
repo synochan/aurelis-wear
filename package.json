@@ -4,9 +4,14 @@
   "description": "Aurelis Wear E-commerce Platform",
   "private": true,
   "scripts": {
-    "build": "node api/init.js && cd frontend && npm install && npm run build",
+    "build": "cd frontend && npm install && npm run build",
     "dev": "cd frontend && npm run dev",
-    "start": "cd frontend && npm run preview"
+    "start": "cd frontend && npm run preview",
+    "vercel-build": "bash vercel-build.sh && cd frontend && npm install && npm run build",
+    "deploy": "node deploy.js",
+    "deploy:frontend": "node deploy-frontend.js",
+    "deploy:backend": "node deploy-backend.js",
+    "verify-build": "node verify-build.js"
   },
   "engines": {
     "node": ">=18.0.0",

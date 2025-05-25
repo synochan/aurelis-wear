@@ -1,0 +1,25 @@
+# Dependencies
+node_modules
+frontend/node_modules
+
+# Local development files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Git files
+.git
+.gitignore
+
+# Cache
+.vercel
+
+# Python virtual environment
+venv
+env
+__pycache__
+*.pyc
+
+# Database
+db.sqlite3 

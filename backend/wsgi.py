@@ -11,8 +11,9 @@ import os
 import sys
 
 # Add the project directory to the Python path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(current_dir)
+sys.path.append(os.path.dirname(current_dir))
 
 from django.core.wsgi import get_wsgi_application
 
@@ -20,5 +21,5 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 
 application = get_wsgi_application()
 
-# Add this for Vercel
+# For Vercel
 app = application 

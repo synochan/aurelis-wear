@@ -2,16 +2,40 @@ import axios from 'axios';
 
 // Determine base URL based on environment
 const getBaseUrl = () => {
-  // In production on Vercel, use the same domain without /api prefix
-  if (import.meta.env.PROD) {
-    return window.location.origin;
+  // First check for a specific environment variable
+  if (import.meta.env.VITE_API_URL) {
+    console.log('[config] Using configured API URL:', import.meta.env.VITE_API_URL);
+    return import.meta.env.VITE_API_URL;
   }
-  return (import.meta.env.VITE_API_URL || 'http://localhost:8000');
+  
+  // In production on Vercel, use the dedicated backend URL
+  if (import.meta.env.PROD && !window.location.hostname.includes('localhost')) {
+    // Use the hardcoded backend URL to ensure consistency
+    const backendUrl = 'https://aurelis-wear-api.vercel.app';
+    console.log('[config] Using hardcoded backend URL:', backendUrl);
+    return backendUrl;
+  }
+  
+  // Default to localhost for any other case
+  console.log('[config] Using localhost API URL');
+  return 'http://localhost:8000';
 };
+
+// Helper to ensure all API paths have the /api prefix
+const ensureApiPath = (path: string) => {
+  if (!path.startsWith('/api') && !path.startsWith('api/')) {
+    return `/api${path.startsWith('/') ? path : `/${path}`}`;
+  }
+  return path;
+};
+
+// Calculate the API base URL
+const apiBaseUrl = getBaseUrl();
+console.log('[config] API Base URL:', apiBaseUrl);
 
 // Create base config for API calls
 export const apiConfig = {
-  baseURL: getBaseUrl(),
+  baseURL: apiBaseUrl,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -57,7 +81,7 @@ export const handleApiResponse = async (response: Response) => {
 
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: getBaseUrl(),
+  baseURL: apiBaseUrl,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -66,13 +90,19 @@ const api = axios.create({
 // Add request interceptor for authentication
 api.interceptors.request.use(
   (config) => {
+    // Ensure path has /api prefix
+    if (config.url) {
+      config.url = ensureApiPath(config.url);
+    }
+    
     const token = localStorage.getItem('token');
     if (token) {
       config.headers['Authorization'] = `Token ${token}`;
     }
     
     // Debug logging
-    console.log(`🚀 Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, config.data);
+    const fullUrl = `${config.baseURL}${config.url}`;
+    console.log(`[config] Request: ${config.method?.toUpperCase()} ${fullUrl}`, config.data);
     return config;
   },
   (error) => Promise.reject(error)
@@ -81,7 +111,7 @@ api.interceptors.request.use(
 // Add response interceptor for error handling
 api.interceptors.response.use(
   (response) => {
-    console.log(`✅ Response from ${response.config.url}:`, response.status);
+    console.log(`[config] Response from ${response.config.url}:`, response.status);
     return response;
   },
   (error) => {
@@ -95,12 +125,12 @@ api.interceptors.response.use(
     
     // Error logging
     if (error.response) {
-      console.error(`❌ Error ${error.response.status} from ${error.config.url}:`, 
+      console.error(`[config] Error ${error.response.status} from ${error.config.url}:`, 
                    error.response.data);
     } else if (error.request) {
-      console.error('❌ No response received:', error.request);
+      console.error('[config] No response received:', error.request);
     } else {
-      console.error('❌ Request failed:', error.message);
+      console.error('[config] Request failed:', error.message);
     }
     
     return Promise.reject(error);
