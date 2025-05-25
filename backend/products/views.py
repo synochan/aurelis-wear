@@ -1,7 +1,20 @@
 from rest_framework import viewsets, generics, filters, permissions
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Product, Category
+from django_filters import rest_framework as django_filters
+from .models import Product, Category, Color, Size
 from .serializers import ProductListSerializer, ProductDetailSerializer, CategorySerializer
+from rest_framework.response import Response
+
+class ProductFilter(django_filters.FilterSet):
+    category = django_filters.CharFilter(field_name='category__slug')
+    min_price = django_filters.NumberFilter(field_name='price', lookup_expr='gte')
+    max_price = django_filters.NumberFilter(field_name='price', lookup_expr='lte')
+    color = django_filters.CharFilter(field_name='colors__name', lookup_expr='icontains')
+    size = django_filters.CharFilter(field_name='sizes__name', lookup_expr='iexact')
+    
+    class Meta:
+        model = Product
+        fields = ['category', 'is_new', 'in_stock', 'min_price', 'max_price', 'color', 'size']
 
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -9,7 +22,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = Product.objects.all()
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['category__slug', 'is_new', 'in_stock']
+    filterset_class = ProductFilter
     search_fields = ['name', 'description', 'category__name']
     ordering_fields = ['price', 'name', 'created_at']
     
@@ -46,4 +59,28 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    lookup_field = 'slug' 
+    lookup_field = 'slug'
+
+class ColorListView(generics.ListAPIView):
+    """
+    API endpoint for available colors
+    """
+    queryset = Color.objects.all()
+    serializer_class = None  # Define a serializer for Color model
+    permission_classes = [permissions.AllowAny]
+    
+    def list(self, request, *args, **kwargs):
+        colors = self.get_queryset().values('name', 'hex_value')
+        return Response(colors)
+
+class SizeListView(generics.ListAPIView):
+    """
+    API endpoint for available sizes
+    """
+    queryset = Size.objects.all()
+    serializer_class = None  # Define a serializer for Size model
+    permission_classes = [permissions.AllowAny]
+    
+    def list(self, request, *args, **kwargs):
+        sizes = self.get_queryset().values('name', 'size_type')
+        return Response(sizes) 
