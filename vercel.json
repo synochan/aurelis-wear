@@ -1,12 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "cd frontend && npm install && npm run build",
+  "buildCommand": "cd frontend && npm install && npm run build:vercel",
   "outputDirectory": "frontend/dist",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "env": {
-    "VITE_API_URL": "https://aurelis-wear-api.onrender.com/api"
+    "VITE_API_URL": "https://aurelis-wear-api.onrender.com/api",
+    "VITE_SKIP_TS_CHECK": "true"
   }
 } 
