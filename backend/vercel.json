@@ -10,10 +10,10 @@
       }
     },
     {
-      "src": "build_files.sh",
-      "use": "@vercel/static-build",
+      "src": "package.json",
+      "use": "@vercel/node",
       "config": {
-        "distDir": "staticfiles"
+        "buildCommand": "npm run vercel-build"
       }
     }
   ],

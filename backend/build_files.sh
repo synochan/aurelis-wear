@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Install packages
+# Install required packages
 pip install -r requirements.txt
 
 # Collect static files
 python manage.py collectstatic --noinput
 
-# Make script executable
-chmod +x build_files.sh 
+# Print completion message
+echo "Build completed successfully"

@@ -1,0 +1,12 @@
+{
+  "name": "aurelis-wear-api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "vercel-build": "pip install -r requirements.txt && python manage.py collectstatic --noinput"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "python": "3.9.0"
+  }
+} 

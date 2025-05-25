@@ -1,7 +1,7 @@
 {
   "name": "aurelis-wear-api",
   "framework": "python",
-  "buildCommand": "pip install -r requirements.txt",
+  "buildCommand": "npm run vercel-build",
   "installCommand": "pip install -r requirements.txt",
   "devCommand": "python manage.py runserver"
 } 
