@@ -1,130 +1,108 @@
-# Aurelis Wear E-commerce
+# Aurelis Wear E-commerce Platform
 
-An e-commerce platform for fashion products built with Django REST Framework backend and React frontend.
+This repository contains the codebase for Aurelis Wear, an e-commerce platform for watches and accessories.
 
 ## Project Structure
 
-The project is split into two deployable parts:
+The project is divided into two main parts:
 
-- **Backend API**: Django REST Framework application in the `backend` folder, deployed to Vercel
-- **Frontend**: React application in the `frontend` folder, deployed separately to Vercel
+- **Frontend**: React application deployed on Vercel
+- **Backend**: Django REST API deployed on Render with Neon PostgreSQL database
 
-## Deployment
+## Frontend (Vercel)
 
-### Backend Deployment (Manual)
+The frontend is a React application built with:
 
-The backend should be deployed manually through the Vercel dashboard for proper Django support:
-
-1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
-2. Click "Add New..." → "Project"
-3. Import your Git repository or select the backend folder
-4. Configure project settings:
-   - Name: `aurelis-wear-api` (or your preferred name)
-   - Framework Preset: Select "Other" (since we have our custom vercel.json)
-   - Root Directory: Select the backend folder
-5. Set up environment variables:
-   - `DATABASE_URL`: Your PostgreSQL connection string
-   - `DJANGO_SETTINGS_MODULE`: `backend.settings`
-   - `DEBUG`: `False`
-   - `ALLOWED_HOSTS`: `.vercel.app,aurelis-wear-api.vercel.app,localhost,127.0.0.1`
-   - `FRONTEND_URL`: `https://aurelis-wear.vercel.app`
-   - `PYTHON_VERSION`: `3.9`
-6. Click "Deploy"
-
-For detailed instructions, see [backend/README.md](backend/README.md)
+- React
+- TypeScript
+- Tailwind CSS
+- Vite
 
 ### Frontend Deployment
 
-The frontend can be deployed using the automated script or manually:
+The frontend is deployed on Vercel at: [https://aurelis-wear.vercel.app](https://aurelis-wear.vercel.app)
 
-```bash
-# Deploy only the frontend
-npm run deploy:frontend
-```
+## Backend (Render)
 
-To deploy the frontend manually:
+The backend is a Django REST API with:
 
-1. Navigate to the frontend directory
-2. Create a separate Vercel project with the frontend directory as the root
-3. Deploy using the configuration in `frontend/vercel.json`
-4. Make sure the `VITE_API_URL` points to your backend deployment URL
+- Django REST Framework
+- Neon PostgreSQL database (PostgreSQL on steroids)
+- Token authentication
 
-## Troubleshooting
+### Backend Deployment
 
-### Build Issues
+The backend is deployed on Render at: [https://aurelis-wear-api.onrender.com](https://aurelis-wear-api.onrender.com)
 
-#### "No output directory named 'dist' found after the build completed"
+## Development Setup
 
-This error occurs when Vercel cannot find the expected build output directory. To fix this:
+### Frontend Development
 
-1. Ensure `vite.config.ts` explicitly sets the output directory:
-   ```typescript
-   build: {
-     outDir: 'dist',
-     emptyOutDir: true
-   }
+1. Navigate to the frontend directory:
+   ```
+   cd frontend
    ```
 
-2. Update build scripts in `frontend/package.json` to specify the output directory:
-   ```json
-   "build": "vite build --outDir dist",
-   "vercel-build": "vite build --outDir dist"
+2. Install dependencies:
+   ```
+   npm install
    ```
 
-3. Verify the correct `distDir` is set in `frontend/vercel.json`:
-   ```json
-   "builds": [
-     { 
-       "src": "package.json", 
-       "use": "@vercel/static-build", 
-       "config": { 
-         "distDir": "dist"
-       } 
-     }
-   ]
+3. Run the development server:
+   ```
+   npm run dev
    ```
 
-4. Run the verification script to check if the build process works correctly:
-   ```bash
-   npm run verify-build
+4. Access the frontend at `http://localhost:5173`
+
+### Backend Development
+
+1. Navigate to the backend directory:
+   ```
+   cd backend
    ```
 
-## Local Development
+2. Create a virtual environment:
+   ```
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-### Backend
+3. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
 
-```bash
-cd backend
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
-```
+4. Set up environment variables (create a .env file in the backend directory):
+   ```
+   SECRET_KEY=your-secret-key
+   DEBUG=True
+   DATABASE_URL=your-neon-postgresql-url
+   ```
 
-### Frontend
+5. Run migrations:
+   ```
+   python manage.py migrate
+   ```
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+6. Run the development server:
+   ```
+   python manage.py runserver
+   ```
 
-## Environment Variables
+7. Access the API at `http://localhost:8000/api/`
 
-### Backend
+## API Documentation
 
-Required environment variables:
+The API provides endpoints for:
 
-- `DATABASE_URL`: PostgreSQL connection string
-- `DJANGO_SETTINGS_MODULE`: Set to `backend.settings`
-- `DEBUG`: Set to `True` for development, `False` for production
-- `ALLOWED_HOSTS`: Comma-separated list of allowed hosts
-- `FRONTEND_URL`: URL of the frontend (set to `https://aurelis-wear.vercel.app` in production)
+- Products: `/api/products/`
+- Authentication: `/api/auth/`
+- Shopping Cart: `/api/cart/`
+- Orders: `/api/orders/`
+- Payments: `/api/payments/`
 
-### Frontend
-
-Required environment variables:
-
-- `VITE_API_URL`: URL of the backend API (set to `https://aurelis-wear-api.vercel.app` in production)
+For detailed API documentation, see the [backend README](backend/README.md).
 
 ## Features
 

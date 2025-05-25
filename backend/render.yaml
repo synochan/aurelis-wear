@@ -1,0 +1,32 @@
+services:
+  # Django web service
+  - type: web
+    name: aurelis-wear-api
+    env: python
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: gunicorn backend.wsgi:application
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://aurelis_owner:npg_tmeoQ63kljNh@ep-icy-resonance-a12upm7n-pooler.ap-southeast-1.aws.neon.tech/aurelis?sslmode=require
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: false
+      - key: ALLOWED_HOSTS
+        value: .onrender.com,aurelis-wear-api.onrender.com
+      - key: PYTHON_VERSION
+        value: 3.11.7
+
+  # PostgreSQL database
+  - type: pserv
+    name: aurelis-wear-db
+    env: docker
+    plan: free
+    envVars:
+      - key: POSTGRES_USER
+        value: postgres
+      - key: POSTGRES_PASSWORD
+        generateValue: true
+      - key: POSTGRES_DB
+        value: aurelis_wear_db 

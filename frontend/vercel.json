@@ -13,6 +13,6 @@
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "env": {
-    "VITE_API_URL": "https://aurelis-wear-api.vercel.app"
+    "VITE_API_URL": "https://aurelis-wear-api.onrender.com/api"
   }
 } 

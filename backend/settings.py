@@ -22,12 +22,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-&a9!%yyl755&3nz&lvdz)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-# Updated ALLOWED_HOSTS to ensure it accepts all Vercel domains and pattern formats
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.vercel.app,aurelis-wear-api.vercel.app').split(',')
-
-# Add wildcard pattern for Vercel preview deployments
-if '.vercel.app' in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.extend(['*.vercel.app', '*-git-*-*.vercel.app'])
+# Updated ALLOWED_HOSTS to ensure it accepts Render domains
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com,aurelis-wear-api.onrender.com').split(',')
 
 # Application definition
 
@@ -87,11 +83,11 @@ WSGI_APPLICATION = 'wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-# For Vercel Postgres support
+# For Neon PostgreSQL support
 DATABASES = {
     'default': dj_database_url.config(
         default=os.environ.get('DATABASE_URL', 'sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')),
-        conn_max_age=0,  # Set to 0 for serverless functions
+        conn_max_age=600,  # Set to 600 seconds (10 minutes) for Render
         ssl_require=False if DEBUG else True
     )
 }
@@ -144,9 +140,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Enhanced CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins in both development and production for now
+CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL_ORIGINS', 'True') == 'True'
 CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_ALLOW_ALL = CORS_ALLOW_ALL_ORIGINS
 
 # Fallback list of allowed origins
 CORS_ALLOWED_ORIGINS = [
@@ -157,11 +153,9 @@ CORS_ALLOWED_ORIGINS = [
     'https://aurelis-wear.vercel.app',
 ]
 
-# Add all Vercel preview domains (this will be expanded by the custom middleware)
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r'^https://aurelis-.*\.vercel\.app$',
-    r'^https://.*\.vercel\.app$',
-]
+# Add CORS allowed origins from environment if specified
+if os.environ.get('CORS_ALLOWED_ORIGINS'):
+    CORS_ALLOWED_ORIGINS.extend(os.environ.get('CORS_ALLOWED_ORIGINS').split(','))
 
 CORS_ALLOW_METHODS = [
     'DELETE',

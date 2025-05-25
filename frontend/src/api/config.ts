@@ -8,21 +8,30 @@ const getBaseUrl = () => {
     return import.meta.env.VITE_API_URL;
   }
   
-  // In production on Vercel, use the dedicated backend URL
+  // In production, use the dedicated Render backend URL
   if (import.meta.env.PROD && !window.location.hostname.includes('localhost')) {
-    // Use the hardcoded backend URL to ensure consistency
-    const backendUrl = 'https://aurelis-wear-api.vercel.app';
-    console.log('[config] Using hardcoded backend URL:', backendUrl);
+    // Use the Render backend URL
+    const backendUrl = 'https://aurelis-wear-api.onrender.com/api';
+    console.log('[config] Using Render backend URL:', backendUrl);
     return backendUrl;
   }
   
   // Default to localhost for any other case
   console.log('[config] Using localhost API URL');
-  return 'http://localhost:8000';
+  return 'http://localhost:8000/api';
 };
 
 // Helper to ensure all API paths have the /api prefix
 const ensureApiPath = (path: string) => {
+  // Check if the API base URL already includes '/api'
+  const baseHasApiPath = apiBaseUrl.endsWith('/api');
+  
+  // If base URL already has '/api' suffix, don't add it again
+  if (baseHasApiPath) {
+    return path.startsWith('/') ? path : `/${path}`;
+  }
+  
+  // Otherwise follow the original logic
   if (!path.startsWith('/api') && !path.startsWith('api/')) {
     return `/api${path.startsWith('/') ? path : `/${path}`}`;
   }

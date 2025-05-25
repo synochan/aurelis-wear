@@ -29,11 +29,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure--6e%hb+_k11v!@n(-!u-r#w3kl1=^cd5#6rkevmgnb9&aadag=')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.environ.get(
     'ALLOWED_HOSTS',
-    '.vercel.app,localhost,127.0.0.1'
+    '.onrender.com,localhost,127.0.0.1'
 ).split(',')
 
 
@@ -61,6 +61,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Added for static file serving
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # CORS middleware
     'django.middleware.common.CommonMiddleware',
@@ -97,13 +98,13 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         default=os.environ.get('DATABASE_URL', 'sqlite:///' + str(BASE_DIR / 'db.sqlite3')),
-        conn_max_age=0,  # Set to 0 for serverless functions
+        conn_max_age=600,  # Increased for better performance on Render
         ssl_require=True
     )
 }
 
 # Use SQLite for development if DATABASE_URL is not set
-if not os.environ.get('DATABASE_URL'):
+if not os.environ.get('DATABASE_URL') and DEBUG:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -163,13 +164,26 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Configure WhiteNoise for static file serving
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS settings
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS settings - updated for Vercel frontend
+CORS_ALLOW_ALL_ORIGINS = False  # More secure to specify allowed origins
+CORS_ALLOWED_ORIGINS = [
+    'https://aurelis-wear.vercel.app',  # Production frontend URL
+    'http://localhost:5173',           # Local development frontend
+    'http://127.0.0.1:5173',
+]
+
+# Allow all origins in development
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -200,9 +214,23 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 12,
 }
 
+# Security settings for production
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
 # Stripe Configuration
-STRIPE_PUBLISHABLE_KEY = 'pk_test_51RR7hKIpgBdnHFG6JfhpaqYmT7KHZEcFgUg1ioQ7I566adwBNJUp1viv9H4xBXhhHMKsDOYEi0hRdZ1gcGVfjDrQ00goLpu7Lo'
-STRIPE_SECRET_KEY = 'sk_test_51RR7hKIpgBdnHFG6PsqJnuiElggf08jIO40PBwdGbr7V4PcKuz7xmSPutvjarlLhuTxkFeLXj69bEWuT9O4oC2rk00B003gXeC'
-STRIPE_WEBHOOK_SECRET = ''  # You can add this later if you decide to use webhooks
+STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')

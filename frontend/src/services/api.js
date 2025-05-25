@@ -7,13 +7,13 @@ const getApiUrl = () => {
     return import.meta.env.VITE_API_URL;
   }
   
-  // In production on Vercel, use the dedicated backend URL
+  // In production, use the dedicated Render backend URL
   if (import.meta.env.PROD && !window.location.hostname.includes('localhost')) {
-    return 'https://aurelis-wear-api.vercel.app';
+    return 'https://aurelis-wear-api.onrender.com/api';
   }
   
   // Default to localhost
-  return 'http://localhost:8000';
+  return 'http://localhost:8000/api';
 };
 
 let API_URL = getApiUrl();
