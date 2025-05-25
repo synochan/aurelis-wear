@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import ProductCard from './ProductCard';
 import FallbackProduct from './FallbackProduct';
 import { Button } from '@/components/ui/button';
-import { useFeaturedProducts } from '@/api/hooks';
+import { useFeaturedProducts } from '@/api/hooks.ts';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from "@/components/ui/skeleton";
 
