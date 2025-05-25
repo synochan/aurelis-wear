@@ -1,5 +1,8 @@
-import api from './config';
 import axios from 'axios';
+import { apiClient } from './client';
+
+// Keep track of the current user
+let currentUser: any = null;
 
 export interface LoginCredentials {
   email: string;
@@ -24,66 +27,15 @@ export interface AuthResponse {
   }
 }
 
-// Store user data in memory
-let currentUser: any = null;
-
-// Get the backend URL
-const getBackendUrl = () => {
-  // First check for a specific environment variable
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-  
-  // In production, use the dedicated Render backend URL
-  if (import.meta.env.PROD && !window.location.hostname.includes('localhost')) {
-    return 'https://aurelis-wear-api.onrender.com/api';
-  }
-  
-  // Default to localhost
-  return 'http://localhost:8000/api';
-};
-
-// Ensure path has /api prefix
-const ensureApiPath = (path: string) => {
-  // Check if the backend URL already includes '/api'
-  const backendUrl = getBackendUrl();
-  const hasApiSuffix = backendUrl.endsWith('/api');
-  
-  // If backend URL already has '/api' suffix, don't add it again
-  if (hasApiSuffix) {
-    return path.startsWith('/') ? path : `/${path}`;
-  }
-  
-  // Otherwise follow the original logic
-  if (!path.startsWith('/api') && !path.startsWith('api/')) {
-    return `/api${path.startsWith('/') ? path : `/${path}`}`;
-  }
-  return path;
-};
-
-const BACKEND_URL = getBackendUrl();
-
 export const authService = {
     // Login user
     login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
       try {
         console.log('[auth] Attempting to login with:', credentials.email);
         
-        // Use direct axios call with full URL
-        const loginPath = ensureApiPath('/auth/login/');
-        const url = `${BACKEND_URL}${loginPath}`;
-        console.log('[auth] Login URL:', url);
-        
-        const response = await axios({
-          method: 'post',
-          url: url,
-          data: {
-            email: credentials.email,
-            password: credentials.password
-          },
-          headers: {
-            'Content-Type': 'application/json',
-          }
+        const response = await apiClient.post('/auth/login/', {
+          email: credentials.email,
+          password: credentials.password
         });
         
         const data = response.data;
@@ -126,19 +78,7 @@ export const authService = {
         
         console.log('[auth] Registration data:', registerData);
         
-        // Use direct axios call with full URL
-        const registerPath = ensureApiPath('/auth/register/');
-        const url = `${BACKEND_URL}${registerPath}`;
-        console.log('[auth] Registration URL:', url);
-        
-        const response = await axios({
-          method: 'post',
-          url: url,
-          data: registerData,
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
+        const response = await apiClient.post('/auth/register/', registerData);
         
         const data = response.data;
         console.log('[auth] Registration successful:', data);
@@ -183,17 +123,7 @@ export const authService = {
       }
       
       try {
-        const userPath = ensureApiPath('/auth/user/');
-        const url = `${BACKEND_URL}${userPath}`;
-        
-        const response = await axios({
-          method: 'get',
-          url: url,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Token ${localStorage.getItem('token')}`
-          }
-        });
+        const response = await apiClient.get('/auth/user/');
         
         const data = response.data;
         // Cache the user data
@@ -220,18 +150,7 @@ export const authService = {
           throw new Error('Not authenticated');
         }
         
-        const userPath = ensureApiPath('/auth/user/');
-        const url = `${BACKEND_URL}${userPath}`;
-        
-        const response = await axios({
-          method: 'patch',
-          url: url,
-          data: profileData,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Token ${localStorage.getItem('token')}`
-          }
-        });
+        const response = await apiClient.patch('/auth/user/', profileData);
         
         const data = response.data;
         // Update the cached user data

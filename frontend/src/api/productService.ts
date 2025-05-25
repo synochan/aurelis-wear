@@ -12,7 +12,7 @@ export const productService = {
         delete params.category__slug;
       }
       
-      const response = await apiClient.get('/api/products/', { params });
+      const response = await apiClient.get('/products/', { params });
       return response.data.results || response.data;
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -23,7 +23,7 @@ export const productService = {
   // Get a single product by ID
   getProductById: async (id: number) => {
     try {
-      const response = await apiClient.get(`/api/products/${id}/`);
+      const response = await apiClient.get(`/products/${id}/`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching product with ID ${id}:`, error);
@@ -35,7 +35,7 @@ export const productService = {
   getFeaturedProducts: async () => {
     try {
       // Since there's no dedicated featured endpoint, we'll use a parameter
-      const response = await apiClient.get('/api/products/featured/');
+      const response = await apiClient.get('/products/featured/');
       return response.data.results || response.data;
     } catch (error) {
       console.error('Error fetching featured products:', error);
