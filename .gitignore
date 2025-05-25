@@ -5,6 +5,7 @@ __pycache__/
 *.so
 .Python
 env/
+venv/
 build/
 develop-eggs/
 dist/
@@ -21,6 +22,8 @@ var/
 *.egg
 .env
 .env.local
+.env.vercel
+.env.production
 
 # Django
 *.log
@@ -55,10 +58,20 @@ coverage
 *.sln
 *.sw?
 
-# Vercel
+# Vercel (removed since we're using Render for backend)
 .vercel
 .now
+.vercel-config.json
+.vercelignore
+
+# Render specific
+.render-buildpacks.json
 
 # Keep environment template files
 !.env.example
-!frontend/.env.example 
+!frontend/.env.example
+!backend/.env.example
+
+# Temporary scripts
+cleanup.ps1
+cleanup.sh 

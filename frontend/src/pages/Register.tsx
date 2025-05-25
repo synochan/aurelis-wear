@@ -7,8 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useRegister } from '../api/hooks';
+import { useRegister } from '@/api/hooks.ts';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { 
+  Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription 
+} from "@/components/ui/card";
 
 // Define form schema with zod
 const registerSchema = z.object({

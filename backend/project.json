@@ -1,7 +1,0 @@
-{
-  "name": "aurelis-wear-api",
-  "framework": "python",
-  "buildCommand": "./build.sh",
-  "installCommand": "pip install -r requirements.txt",
-  "devCommand": "python manage.py runserver"
-} 

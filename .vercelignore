@@ -1,39 +1,40 @@
-# Dependencies
-node_modules
-frontend/node_modules
-
-# Local development files
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Git files
-.git
-.gitignore
-
-# Cache
-.vercel
-
-# Python virtual environment
-venv
-env
-__pycache__
-*.pyc
-
-# Database
-db.sqlite3
-
-# When deploying a subproject, ignore the root vercel.json
-/vercel.json
-
-# Ignore most directories to prevent deploying both frontend and backend 
-# But allow essential root files
-frontend/
+# Backend-related files (not needed for frontend deployment)
 backend/
 api/
-.git/
+__pycache__/
+*.py
+*.pyc
+*.pyo
+*.pyd
+db.sqlite3
+*.sqlite3
+venv/
+env/
+*.so
+.Python
+develop-eggs/
+eggs/
+.eggs/
+*.egg-info/
+*.egg
+.pytest_cache/
 
-# Exceptions - these files are needed
-!package.json
-!index.html 
+# Git files
+.git/
+.gitignore
+
+# Dependencies (will be installed during build)
+# Don't ignore node_modules as Vercel needs to build them
+# node_modules/
+# frontend/node_modules/
+
+# Cache
+.vercel/
+
+# Environment files (environment variables are set in Vercel dashboard)
+.env
+.env.*
+!.env.example
+
+# Don't ignore frontend directory! This is what we're deploying
+# frontend/ 

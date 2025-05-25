@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/context/CartContext';
 import FeaturedProducts from '@/components/FeaturedProducts';
-import { useProductDetails } from '@/api/hooks';
+import { useProductDetails } from '@/api/hooks.ts';
 import { useToast } from '@/hooks/use-toast';
 import { Product } from '@/components/ProductCard';
 

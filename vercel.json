@@ -1,13 +1,11 @@
 {
   "version": 2,
-  "public": false,
-  "github": {
-    "enabled": false
-  },
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "env": {
+    "VITE_API_URL": "https://aurelis-wear-api.onrender.com/api"
+  }
 } 

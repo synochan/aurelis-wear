@@ -1,0 +1,27 @@
+services:
+  # Django web service
+  - type: web
+    name: aurelis-wear-api
+    env: python
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: gunicorn backend.wsgi:application
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://aurelis_owner:npg_tmeoQ63kljNh@ep-icy-resonance-a12upm7n-pooler.ap-southeast-1.aws.neon.tech/aurelis?sslmode=require
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: false
+      - key: ALLOWED_HOSTS
+        value: .onrender.com,aurelis-wear-api.onrender.com
+      - key: FRONTEND_URL
+        value: https://aurelis-wear.vercel.app
+      - key: PYTHON_VERSION
+        value: 3.11.7
+      - key: CORS_ALLOW_ALL_ORIGINS
+        value: false
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://aurelis-wear.vercel.app,http://localhost:5173,https://localhost:8080
+
+  # Note: Using external Neon PostgreSQL database instead of provisioning a Render database

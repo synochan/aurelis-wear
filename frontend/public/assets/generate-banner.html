@@ -1,86 +1,98 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Generate Banner for Aurelis Wear Shop</title>
-  <style>
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
-      padding: 20px;
-    }
-    canvas {
-      border: 1px solid #ccc;
-      margin-bottom: 20px;
-    }
-    .buttons {
-      display: flex;
-      gap: 10px;
-    }
-    button {
-      padding: 10px 15px;
-      background-color: #0066ff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    p {
-      max-width: 600px;
-      margin-top: 20px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Banner</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+        }
+        
+        .banner {
+            width: 1200px;
+            height: 630px;
+            background: linear-gradient(to bottom, #0A0A0A, #141414);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-family: Arial, sans-serif;
+            position: relative;
+        }
+        
+        .logo {
+            font-size: 80px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .tagline {
+            font-size: 48px;
+            font-weight: bold;
+            color: #0066FF;
+            margin-bottom: 20px;
+        }
+        
+        .subtext {
+            font-size: 28px;
+            color: #AAAAAA;
+            margin-bottom: 30px;
+        }
+        
+        .accent-line {
+            width: 600px;
+            height: 4px;
+            background-color: #0066FF;
+        }
+        
+        .save-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #0066FF;
+            color: white;
+            font-family: Arial, sans-serif;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-  <h1>Aurelis Wear Shop Banner Generator</h1>
-  <canvas id="banner" width="1200" height="630"></canvas>
-  <div class="buttons">
-    <button onclick="downloadBanner()">Download Banner</button>
-  </div>
-  <p>
-    This tool generates a 1200×630 banner image suitable for social media sharing.
-    After downloading, place the banner.jpg file in the /public/assets/ directory.
-  </p>
+    <div class="banner" id="banner">
+        <div class="logo">AURELIS</div>
+        <div class="tagline">ELEVATE YOUR STYLE</div>
+        <div class="subtext">Premium Fashion Clothing</div>
+        <div class="accent-line"></div>
+    </div>
+    
+    <button class="save-btn" onclick="saveBanner()">Save as PNG</button>
+    
+    <script>
+        function saveBanner() {
+            // Use html2canvas to convert the div to an image
+            html2canvas(document.getElementById('banner')).then(canvas => {
+                // Create a download link
+                const link = document.createElement('a');
+                link.download = 'banner.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
 
-  <script>
-    const canvas = document.getElementById('banner');
-    const ctx = canvas.getContext('2d');
-
-    // Create a gradient background
-    const gradient = ctx.createLinearGradient(0, 0, 0, 630);
-    gradient.addColorStop(0, '#0a0a0a');
-    gradient.addColorStop(1, '#141414');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 1200, 630);
-
-    // Add logo text
-    ctx.font = 'bold 80px Arial';
-    ctx.fillStyle = '#ffffff';
-    ctx.textAlign = 'center';
-    ctx.fillText('AURELIS', 600, 250);
-
-    // Add tagline
-    ctx.font = 'bold 48px Arial';
-    ctx.fillStyle = '#0066ff';
-    ctx.fillText('ELEVATE YOUR STYLE', 600, 330);
-
-    // Add subtext
-    ctx.font = '28px Arial';
-    ctx.fillStyle = '#aaaaaa';
-    ctx.fillText('Premium Fashion Clothing', 600, 400);
-
-    // Add blue accent line
-    ctx.fillStyle = '#0066ff';
-    ctx.fillRect(300, 450, 600, 4);
-
-    function downloadBanner() {
-      const link = document.createElement('a');
-      link.download = 'banner.jpg';
-      link.href = canvas.toDataURL('image/jpeg', 0.9);
-      link.click();
-    }
-  </script>
+        // Load the html2canvas library
+        const script = document.createElement('script');
+        script.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
+        document.body.appendChild(script);
+    </script>
 </body>
 </html> 
