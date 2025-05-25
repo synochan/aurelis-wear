@@ -51,9 +51,9 @@ INSTALLED_APPS = [
 
 # Cloudinary settings
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_NAME', ''),
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', '')
+    'CLOUD_NAME': 'aurelis',
+    'API_KEY': '656319486157362',
+    'API_SECRET': 'VvLFCBzDl-LnWuYzzTCz1Qxy4NE'
 }
 
 # Use Cloudinary for default file storage

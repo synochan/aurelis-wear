@@ -7,6 +7,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+import logging
 
 from orders.models import Order
 from .models import Payment
@@ -27,9 +28,15 @@ class CreatePaymentIntentView(APIView):
     
     def post(self, request):
         """Create a payment intent for an order"""
+        logger = logging.getLogger('django')
+        
+        # Log the request data for debugging
+        logger.info(f"Payment intent request data: {request.data}")
+        
         serializer = PaymentIntentSerializer(data=request.data)
         
         if not serializer.is_valid():
+            logger.error(f"Serializer errors: {serializer.errors}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         order_id = serializer.validated_data['order_id']
@@ -37,9 +44,11 @@ class CreatePaymentIntentView(APIView):
         try:
             # Get the order
             order = Order.objects.get(id=order_id, user=request.user)
+            logger.info(f"Order found: {order.id}, total price: {order.total_price}")
             
             # Check if order already has a payment
             if hasattr(order, 'payment') and order.payment.status == 'completed':
+                logger.warning(f"Order {order.id} already paid")
                 return Response(
                     {"error": "This order has already been paid for"},
                     status=status.HTTP_400_BAD_REQUEST
@@ -59,34 +68,49 @@ class CreatePaymentIntentView(APIView):
                 payment.status = 'pending'
                 payment.save()
             
-            # Create a payment intent
-            intent = stripe.PaymentIntent.create(
-                amount=int(float(order.total_price) * 100),  # Convert to cents
-                currency='usd',
-                metadata={
-                    'order_id': order.id,
-                    'user_id': request.user.id
-                }
-            )
+            # Convert to cents and ensure it's an integer
+            amount_in_cents = int(float(order.total_price) * 100)
+            logger.info(f"Creating Stripe payment intent for amount: {amount_in_cents} cents")
             
-            # Save the payment intent ID
-            payment.stripe_payment_intent_id = intent.id
-            payment.save()
-            
-            return Response({
-                'clientSecret': intent.client_secret,
-                'paymentId': payment.id
-            })
-            
+            try:
+                # Create a payment intent
+                intent = stripe.PaymentIntent.create(
+                    amount=amount_in_cents,  # Convert to cents
+                    currency='usd',
+                    metadata={
+                        'order_id': order.id,
+                        'user_id': request.user.id
+                    }
+                )
+                
+                logger.info(f"Payment intent created: {intent.id}")
+                
+                # Save the payment intent ID
+                payment.stripe_payment_intent_id = intent.id
+                payment.save()
+                
+                return Response({
+                    'clientSecret': intent.client_secret,
+                    'paymentId': payment.id
+                })
+            except Exception as stripe_error:
+                logger.error(f"Stripe error details: {str(stripe_error)}")
+                return Response(
+                    {"error": str(stripe_error)},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
         except Order.DoesNotExist:
+            logger.error(f"Order not found: {order_id}")
             return Response(
                 {"error": "Order not found or does not belong to you"},
                 status=status.HTTP_404_NOT_FOUND
             )
-        except stripe.error.StripeError as e:
+        except Exception as e:
+            logger.error(f"Unexpected error: {str(e)}")
             return Response(
                 {"error": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 class PaymentConfirmationView(APIView):

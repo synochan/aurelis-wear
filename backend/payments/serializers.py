@@ -9,6 +9,7 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 class PaymentIntentSerializer(serializers.Serializer):
     order_id = serializers.IntegerField()
+    amount = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
     payment_method_id = serializers.CharField(required=False, allow_null=True)
     
     # Include any additional fields you want from the client (e.g., for saving payment method)
