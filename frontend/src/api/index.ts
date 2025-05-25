@@ -1,13 +1,25 @@
-// Re-export API components for easier importing
+// Export API components for easier importing
 import api from './config';
-export default api;
 
-// Export other API modules as needed
-export * from './hooks';
-export * from './authService';
-export * from './cartService';
-export * from './productService';
+// Export all hooks directly
+export { 
+  useProducts,
+  useFeaturedProducts,
+  useProductDetails,
+  useLogin,
+  useRegister,
+  useLogout,
+  useCurrentUser,
+  useCart,
+  useAddToCart,
+  useUpdateCartItem,
+  useRemoveFromCart,
+  useClearCart
+} from './hooks';
 
-// Re-export hooks as a namespace as well for compatibility
-import * as hooks from './hooks';
-export { hooks }; 
+// Export services
+export { authService } from './authService';
+export { type AddToCartItem } from './cartService';
+
+// Default export
+export default api; 

@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { api } from '@/api/apiHooks';
+import api from '@/api';
 
 const OrderConfirmation = () => {
   const { orderId } = useParams<{ orderId: string }>();

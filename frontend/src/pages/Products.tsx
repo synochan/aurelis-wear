@@ -18,7 +18,7 @@ import {
 import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useProducts } from '@/api/apiHooks';
+import { useProducts } from '@/api';
 
 const categories = [
   "All",

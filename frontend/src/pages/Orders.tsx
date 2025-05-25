@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, ChevronRight, ShoppingBag } from 'lucide-react';
-import { useCurrentUser, api } from '@/api/apiHooks';
+import { useCurrentUser } from '@/api';
+import api from '@/api';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from '@/components/ui/use-toast';
 
