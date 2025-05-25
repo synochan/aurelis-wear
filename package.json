@@ -10,7 +10,8 @@
     "vercel-build": "bash vercel-build.sh && cd frontend && npm install && npm run build",
     "deploy": "node deploy.js",
     "deploy:frontend": "node deploy-frontend.js",
-    "deploy:backend": "node deploy-backend.js"
+    "deploy:backend": "node deploy-backend.js",
+    "verify-build": "node verify-build.js"
   },
   "engines": {
     "node": ">=18.0.0",

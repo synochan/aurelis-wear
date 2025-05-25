@@ -1,0 +1,40 @@
+# Virtual environment
+venv
+env
+.env
+
+# Database
+db.sqlite3
+
+# Cache files
+__pycache__
+*.py[cod]
+*$py.class
+
+# Local development files
+.DS_Store
+.idea
+.vscode
+
+# Test files
+tests/
+test_*.py
+
+# Git
+.git
+.gitignore
+
+# Logs
+*.log
+
+# Development scripts
+deploy.py
+diagnose.py
+sample_data.py
+load_sample_data.py
+index.py
+
+# Don't need these for API deployment
+node_modules
+package.json
+package-lock.json 

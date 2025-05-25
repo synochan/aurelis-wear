@@ -34,8 +34,12 @@ try {
     framework: 'vite',
     rewrites: [
       { 
-        source: '/(.*)', 
-        destination: '/index.html' 
+        source: "/assets/(.*)", 
+        destination: "/assets/$1" 
+      },
+      { 
+        source: "/(.*)", 
+        destination: "/index.html" 
       }
     ],
     env: {
@@ -52,8 +56,25 @@ try {
   // Change to frontend directory
   process.chdir(frontendDir);
   
+  // First, build locally to verify the dist directory is created
+  try {
+    console.log('Building frontend locally to verify dist directory...');
+    execSync('npm run build', { stdio: 'inherit' });
+    
+    // Check if dist directory exists
+    if (fs.existsSync('dist')) {
+      console.log('✅ dist directory successfully created');
+    } else {
+      console.error('❌ dist directory was not created by the build process');
+      process.exit(1);
+    }
+  } catch (buildError) {
+    console.error('Error during local build:', buildError);
+    process.exit(1);
+  }
+  
   // Deploy to Vercel
-  execSync(`vercel --prod --confirm --name ${projectName}`, { stdio: 'inherit' });
+  execSync(`vercel --prod --yes --name ${projectName}`, { stdio: 'inherit' });
   
   // Clean up
   fs.unlinkSync('vercel.config.json');

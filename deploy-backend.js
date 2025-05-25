@@ -53,7 +53,7 @@ try {
   process.chdir(backendDir);
   
   // Deploy to Vercel
-  execSync(`vercel --prod --confirm --name ${projectName}`, { stdio: 'inherit' });
+  execSync(`vercel --prod --yes --name ${projectName}`, { stdio: 'inherit' });
   
   // Clean up
   fs.unlinkSync('vercel.config.json');

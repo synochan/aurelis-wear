@@ -1,11 +1,14 @@
 {
   "version": 2,
   "builds": [
-    { "src": "index.py", "use": "@vercel/python" }
+    { "src": "wsgi.py", "use": "@vercel/python" }
   ],
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "index.py" },
-    { "source": "/(.*)", "destination": "index.py" }
+  "routes": [
+    { "src": "/static/(.*)", "dest": "/static/$1" },
+    { "src": "/media/(.*)", "dest": "/media/$1" },
+    { "src": "/admin/(.*)", "dest": "/wsgi.py" },
+    { "src": "/api/(.*)", "dest": "/wsgi.py" },
+    { "src": "/(.*)", "dest": "/wsgi.py" }
   ],
   "env": {
     "DATABASE_URL": "${DATABASE_URL}",
