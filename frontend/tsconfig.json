@@ -9,11 +9,13 @@
     "paths": {
       "@/*": ["./src/*"]
     },
+    "moduleResolution": "node",
     "noImplicitAny": false,
     "noUnusedParameters": false,
     "skipLibCheck": true,
     "allowJs": true,
     "noUnusedLocals": false,
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "resolveJsonModule": true
   }
 }

@@ -1,6 +1,6 @@
-import { apiClient } from './client.js';
+import { apiClient } from './client';
 import { CartItem } from '@/context/CartContext';
-import { authService } from './authService.js';
+import { authService } from './authService';
 
 // Type definitions
 export interface AddToCartItem {

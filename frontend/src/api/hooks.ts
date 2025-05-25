@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { productService, mapProductFromApi, ProductResponse } from './productService.js';
-import { authService, LoginCredentials, RegisterData } from './authService.js';
-import { cartService, CartResponse, AddToCartItem } from './cartService.js';
+import { productService, mapProductFromApi, ProductResponse } from './productService';
+import { authService, LoginCredentials, RegisterData } from './authService';
+import { cartService, CartResponse, AddToCartItem } from './cartService';
 import { Product } from '@/components/ProductCard';
 import { CartItem } from '@/context/CartContext';
 

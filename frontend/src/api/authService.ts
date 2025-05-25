@@ -1,4 +1,4 @@
-import api from './config.js';
+import api from './config';
 import axios from 'axios';
 
 export interface LoginCredentials {
