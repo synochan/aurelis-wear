@@ -9,34 +9,63 @@ The project is divided into two main parts:
 - **Frontend**: React application deployed on Vercel
 - **Backend**: Django REST API deployed on Render with Neon PostgreSQL database
 
-## Frontend (Vercel)
+## Architecture Overview
 
-The frontend is a React application built with:
+```
+├── frontend/            # React frontend (deployed on Vercel)
+│   ├── src/             # React source code
+│   └── public/          # Static assets
+└── backend/             # Django backend (deployed on Render)
+    ├── products/        # Products app
+    ├── authentication/  # Authentication app
+    ├── cart/            # Shopping cart app
+    ├── orders/          # Orders app
+    └── payments/        # Payments app
+```
 
-- React
-- TypeScript
-- Tailwind CSS
-- Vite
+## Local Development
 
-### Frontend Deployment
+### Backend Setup
 
-The frontend is deployed on Vercel at: [https://aurelis-wear.vercel.app](https://aurelis-wear.vercel.app)
+1. Navigate to the backend directory:
+   ```
+   cd backend
+   ```
 
-## Backend (Render)
+2. Create a virtual environment:
+   ```
+   python -m venv venv
+   # On Windows
+   venv\Scripts\activate
+   # On macOS/Linux
+   source venv/bin/activate
+   ```
 
-The backend is a Django REST API with:
+3. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
 
-- Django REST Framework
-- Neon PostgreSQL database (PostgreSQL on steroids)
-- Token authentication
+4. Set up environment variables (a `.env` file is already configured in the backend directory)
 
-### Backend Deployment
+5. Run migrations:
+   ```
+   python manage.py migrate
+   ```
 
-The backend is deployed on Render at: [https://aurelis-wear-api.onrender.com](https://aurelis-wear-api.onrender.com)
+6. Create a superuser:
+   ```
+   python manage.py createsuperuser
+   ```
 
-## Development Setup
+7. Run the development server:
+   ```
+   python manage.py runserver
+   ```
 
-### Frontend Development
+8. Access the API at `http://localhost:8000/api/`
+
+### Frontend Setup
 
 1. Navigate to the frontend directory:
    ```
@@ -48,49 +77,57 @@ The backend is deployed on Render at: [https://aurelis-wear-api.onrender.com](ht
    npm install
    ```
 
-3. Run the development server:
+3. Start the development server:
    ```
    npm run dev
    ```
 
 4. Access the frontend at `http://localhost:5173`
 
-### Backend Development
+## Deployment
 
-1. Navigate to the backend directory:
+### Frontend (Vercel)
+
+The frontend is already deployed on Vercel at: [https://aurelis-wear.vercel.app](https://aurelis-wear.vercel.app)
+
+- The frontend configuration is in `frontend/vercel.json`
+- Environment variables are set in the Vercel dashboard
+
+### Backend (Render)
+
+The backend is deployed on Render using either:
+
+1. **Render Blueprint** (recommended): 
+   - Uses the `backend/render.yaml` file
+   - Automatically provisions both web service and database
+   - See [backend README](backend/README.md) for detailed instructions
+
+2. **Manual Deployment**:
+   - Create a new Web Service on Render
+   - Connect your GitHub repository
+   - Set build command to `./build.sh`
+   - Set start command to `gunicorn backend.wsgi:application`
+   - Add required environment variables (see [backend README](backend/README.md))
+
+## Database (Neon PostgreSQL)
+
+The application uses Neon PostgreSQL for the database. The connection settings are:
+
+- Connection string format: `postgresql://username:password@hostname:port/database?sslmode=require`
+- The connection string should be added as `DATABASE_URL` in your environment variables
+- Never commit the actual connection string to git - it should stay in `.env` files (which are gitignored)
+
+### Migrating Data from SQLite to Neon
+
+If you have existing data in SQLite that you need to migrate to Neon:
+
+1. Make sure your SQLite database file exists and contains your data
+2. Configure your `.env` file with the Neon PostgreSQL connection string
+3. Run the migration script:
    ```
    cd backend
+   python migrate_to_neon.py
    ```
-
-2. Create a virtual environment:
-   ```
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-
-4. Set up environment variables (create a .env file in the backend directory):
-   ```
-   SECRET_KEY=your-secret-key
-   DEBUG=True
-   DATABASE_URL=your-neon-postgresql-url
-   ```
-
-5. Run migrations:
-   ```
-   python manage.py migrate
-   ```
-
-6. Run the development server:
-   ```
-   python manage.py runserver
-   ```
-
-7. Access the API at `http://localhost:8000/api/`
 
 ## API Documentation
 

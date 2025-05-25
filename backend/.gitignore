@@ -35,6 +35,7 @@ media
 # Environment variables
 .env
 .env.local
+.env.production
 .venv
 env/
 venv/
@@ -48,3 +49,10 @@ venv/
 *.swp
 *.swo
 *~
+
+# Don't ignore example files
+!.env.example
+
+# SQLite database files
+*.sqlite3
+*.db

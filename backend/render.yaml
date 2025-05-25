@@ -15,18 +15,13 @@ services:
         value: false
       - key: ALLOWED_HOSTS
         value: .onrender.com,aurelis-wear-api.onrender.com
+      - key: FRONTEND_URL
+        value: https://aurelis-wear.vercel.app
       - key: PYTHON_VERSION
         value: 3.11.7
+      - key: CORS_ALLOW_ALL_ORIGINS
+        value: false
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://aurelis-wear.vercel.app,http://localhost:5173
 
-  # PostgreSQL database
-  - type: pserv
-    name: aurelis-wear-db
-    env: docker
-    plan: free
-    envVars:
-      - key: POSTGRES_USER
-        value: postgres
-      - key: POSTGRES_PASSWORD
-        generateValue: true
-      - key: POSTGRES_DB
-        value: aurelis_wear_db 
+  # Note: Using external Neon PostgreSQL database instead of provisioning a Render database
