@@ -32,4 +32,7 @@ export default defineConfig(({ mode }) => ({
     extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json'],
     preserveSymlinks: true
   },
+  optimizeDeps: {
+    entries: ['src/**/*.tsx', 'src/**/*.ts']
+  }
 }));
