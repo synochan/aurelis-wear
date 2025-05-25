@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, ChevronRight, ShoppingBag } from 'lucide-react';
 import { useCurrentUser } from '@/api/hooks';
-import api from '@/api/config';
+import api from '@/api';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from '@/components/ui/use-toast';
 

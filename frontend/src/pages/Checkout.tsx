@@ -9,7 +9,8 @@ import { useCart } from '@/api/hooks';
 import ShippingForm from '@/components/checkout/ShippingForm';
 import PaymentForm from '@/components/checkout/PaymentForm';
 import OrderSummary from '@/components/checkout/OrderSummary';
-import api from '@/api/config';
+import api from '@/api';
+import { useShippingForm, usePaymentForm } from '@/components/checkout/hooks';
 
 // Initialize Stripe (we'll load the publishable key from the API)
 let stripePromise: Promise<any> | null = null;
