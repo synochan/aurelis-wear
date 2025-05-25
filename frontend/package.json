@@ -5,11 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build --outDir dist",
-    "build:dev": "vite build --mode development --outDir dist",
+    "build": "tsc && vite build",
+    "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "vercel-build": "vite build --outDir dist"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
