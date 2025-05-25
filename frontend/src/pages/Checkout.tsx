@@ -5,11 +5,10 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { useCart } from '@/api';
+import { useCart, api } from '@/api/apiHooks';
 import ShippingForm from '@/components/checkout/ShippingForm';
 import PaymentForm from '@/components/checkout/PaymentForm';
 import OrderSummary from '@/components/checkout/OrderSummary';
-import api from '@/api';
 
 // Initialize Stripe (we'll load the publishable key from the API)
 let stripePromise: Promise<any> | null = null;
