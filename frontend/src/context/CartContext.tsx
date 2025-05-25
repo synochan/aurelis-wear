@@ -1,8 +1,8 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { useCart as useCartQuery, useAddToCart, useUpdateCartItem, useRemoveFromCart, useClearCart } from '../api/hooks';
+import { useCart as useCartQuery, useAddToCart, useUpdateCartItem, useRemoveFromCart, useClearCart } from '@/api/hooks';
 import { useToast } from '@/hooks/use-toast';
-import { authService } from '../api/authService';
-import { AddToCartItem } from '../api/cartService';
+import { authService } from '@/api/authService';
+import { AddToCartItem } from '@/api/cartService';
 
 export interface CartItem {
   id: number;        // Cart item ID for operations
