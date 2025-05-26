@@ -29,8 +29,8 @@ apiClient.interceptors.request.use(
   (config) => {
     if (config.url) {
       let path = config.url;
-      // Only prepend /api if not already present
-      if (!path.startsWith('/api/')) {
+      // Only prepend /api if /api is not already in the path
+      if (!path.includes('/api/')) {
         // Ensure path starts with slash
         if (!path.startsWith('/')) {
           path = '/' + path;
