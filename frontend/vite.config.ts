@@ -42,5 +42,8 @@ export default defineConfig({
   },
   esbuild: {
     logOverride: { 'this-is-undefined-in-esm': 'silent' }
-  }
+  },
+  // SPA fallback configuration for history API
+  appType: 'spa',
+  base: '/',
 });

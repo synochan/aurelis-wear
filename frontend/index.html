@@ -30,17 +30,31 @@
     
     <!-- Handle SPA routing -->
     <script type="text/javascript">
-      // Single-page app handling for GitHub Pages/Vercel
-      (function(l) {
-        if (l.search[1] === '/' ) {
-          var decoded = l.search.slice(1).split('&').map(function(s) { 
-            return s.replace(/~and~/g, '&')
-          }).join('?');
-          window.history.replaceState(null, null,
-              l.pathname.slice(0, -1) + decoded + l.hash
-          );
+      // Force URL normalization for SPA routing
+      (function() {
+        // Single-page app handling for history API
+        var segmentCount = 0;
+        var location = window.location;
+        
+        // If we're not at the root and there's no file extension (likely a route)
+        var path = location.pathname;
+        var isNotRoot = path !== '/' && path !== '/index.html';
+        var hasNoExtension = path.indexOf('.') === -1;
+        
+        if (isNotRoot && hasNoExtension) {
+          // Store the path to restore after redirect
+          sessionStorage.setItem('redirect_path', path + location.search + location.hash);
         }
-      }(window.location))
+
+        // Check if we should redirect from a stored path
+        window.addEventListener('DOMContentLoaded', function() {
+          var redirectPath = sessionStorage.getItem('redirect_path');
+          if (redirectPath && path === '/') {
+            sessionStorage.removeItem('redirect_path');
+            history.replaceState(null, null, redirectPath);
+          }
+        });
+      })();
     </script>
   </head>
 
