@@ -67,7 +67,7 @@ const Products = () => {
   
   // Create API filter params
   const apiFilters: Record<string, string> = {};
-  if (categoryFromUrl) {
+  if (categoryFromUrl && categoryFromUrl.toLowerCase() !== 'all') {
     apiFilters.category__slug = categoryFromUrl.toLowerCase();
   }
   

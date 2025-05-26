@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser, authService } from '@/api';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
+import Orders from './Orders';
 
 // Define form schema with zod
 const profileSchema = z.object({
@@ -285,10 +286,9 @@ const Account = () => {
               <CardTitle>Order History</CardTitle>
               <CardDescription>View your past orders</CardDescription>
             </CardHeader>
-            
             <CardContent>
-              <div className="text-center py-8 text-gray-500">
-                <p>No orders found</p>
+              <div className="py-4">
+                <Orders />
               </div>
             </CardContent>
           </Card>

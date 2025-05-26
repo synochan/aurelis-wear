@@ -76,10 +76,19 @@ const OrderConfirmation = () => {
   // Helper to format currency
   const formatPeso = (amount: number) => formatCurrency(amount);
 
-  const subtotal = orderDetails?.subtotal || calculateSubtotal();
-  const shippingCost = orderDetails?.shipping_price || 0;
-  const tax = orderDetails?.tax || (subtotal * 0.08); // Default tax rate of 8% if not provided
-  const total = orderDetails?.total_price || (subtotal + shippingCost + tax);
+  // Use backend values if present and > 0, otherwise calculate
+  const subtotal = orderDetails?.subtotal && orderDetails.subtotal > 0
+    ? orderDetails.subtotal
+    : calculateSubtotal();
+  const shippingCost = orderDetails?.shipping_price !== undefined && orderDetails.shipping_price !== null
+    ? orderDetails.shipping_price
+    : 0;
+  const tax = orderDetails?.tax !== undefined && orderDetails.tax !== null
+    ? orderDetails.tax
+    : subtotal * 0.08;
+  const total = orderDetails?.total_price && orderDetails.total_price > 0
+    ? orderDetails.total_price
+    : subtotal + shippingCost + tax;
 
   return (
     <div className="container mx-auto py-16 px-4 max-w-4xl">
@@ -119,19 +128,19 @@ const OrderConfirmation = () => {
               <div className="border-t pt-4 mt-4">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
-                  <span>{renderPrice(formatPeso(subtotal))}</span>
+                  <span>{formatPeso(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping:</span>
-                  <span>{renderPrice(formatPeso(shippingCost))}</span>
+                  <span>{formatPeso(shippingCost)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax:</span>
-                  <span>{renderPrice(formatPeso(tax))}</span>
+                  <span>{formatPeso(tax)}</span>
                 </div>
                 <div className="flex justify-between font-bold mt-2 pt-2 border-t">
                   <span>Total:</span>
-                  <span>{renderPrice(formatPeso(total))}</span>
+                  <span>{formatPeso(total)}</span>
                 </div>
               </div>
               

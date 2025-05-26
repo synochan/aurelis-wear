@@ -32,6 +32,7 @@ import { useCurrentUser, useLogout } from '@/api';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { CommandDialog, CommandInput, CommandList, CommandItem, CommandEmpty } from '@/components/ui/command';
 
 const categories = [
   { name: "Men", subcategories: ["T-Shirts", "Hoodies", "Pants", "Shoes"] },
@@ -48,6 +49,7 @@ const Navbar = () => {
   const { cartItemCount } = useCart();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const handleLogout = () => {
     logout(undefined, {
@@ -121,7 +123,7 @@ const Navbar = () => {
 
           {/* Right Side Icons */}
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)}>
               <Search className="h-5 w-5" />
             </Button>
             
@@ -280,6 +282,16 @@ const Navbar = () => {
           </div>
         </div>
       )}
+
+      <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
+        <CommandInput placeholder="Search for products..." />
+        <CommandList>
+          {/* TODO: Populate with product search results */}
+          <CommandEmpty>No products found.</CommandEmpty>
+          {/* Example static items, replace with real search results */}
+          <CommandItem onSelect={() => { setSearchOpen(false); navigate('/products'); }}>All Products</CommandItem>
+        </CommandList>
+      </CommandDialog>
     </header>
   );
 };
