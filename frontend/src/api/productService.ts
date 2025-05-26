@@ -1,6 +1,5 @@
 import { apiClient } from './client';
 import { Product } from '@/components/ProductCard';
-import { mockProducts } from './mockData';
 import { formatCurrency } from '@/utils/formatters';
 
 // Helper function to process image URLs
@@ -45,17 +44,13 @@ export const productService = {
       const response = await apiClient.get('/products', { params });
       const data = response.data.results || response.data;
       
-      // If data is empty or not an array, fall back to mock data
       if (!data || !Array.isArray(data) || data.length === 0) {
-        console.warn('API returned empty results, using mock products');
-        return mockProducts;
+        throw new Error('No products found');
       }
       
       return data;
     } catch (error) {
-      // If API fails, return mock data
-      console.warn('Using mock products due to API error:', error);
-      return mockProducts;
+      throw error;
     }
   },
   
@@ -68,12 +63,6 @@ export const productService = {
       }
       return response.data;
     } catch (error) {
-      // If API fails, try to find the product in the mock data
-      console.warn(`Failed to fetch product ${id} from API, using mock data`);
-      const mockProduct = mockProducts.find(product => product.id === id);
-      if (mockProduct) {
-        return mockProduct;
-      }
       throw error;
     }
   },
@@ -87,20 +76,13 @@ export const productService = {
       });
       const data = response.data.results || response.data;
       
-      // If data is empty or not an array, fall back to next approach
       if (!data || !Array.isArray(data) || data.length === 0) {
         throw new Error('No featured products found');
       }
       
       return data;
     } catch (error) {
-      console.warn('Failed to get featured products, trying all products:', error);
-      
-      // Fall back to mock data directly since both API endpoints are failing
-      console.warn('Using mock featured products');
-      return mockProducts
-        .filter(product => product.isNew || product.discountPercentage > 0)
-        .slice(0, 4);
+      throw error;
     }
   }
 };
