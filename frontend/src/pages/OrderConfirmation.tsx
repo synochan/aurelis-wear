@@ -16,7 +16,7 @@ const OrderConfirmation = () => {
     const fetchOrderDetails = async () => {
       setLoading(true);
       try {
-        const response = await api.get(`api/orders/${orderId}/`);
+        const response = await api.get(`/orders/${orderId}/`);
         setOrderDetails(response.data);
       } catch (error) {
         console.error('Error fetching order details:', error);
