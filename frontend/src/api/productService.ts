@@ -11,8 +11,13 @@ const processImageUrl = (imageUrl: string): string => {
     return imageUrl;
   }
   
-  // If it's a Cloudinary ID, construct the URL
-  if (imageUrl.includes('image/upload/') || imageUrl.includes('products/')) {
+  // If it starts with 'image/upload/', just prepend the domain
+  if (imageUrl.startsWith('image/upload/')) {
+    return `https://res.cloudinary.com/dr5mrez5h/${imageUrl}`;
+  }
+
+  // If it's a Cloudinary ID or contains 'products/', construct the URL
+  if (imageUrl.includes('products/')) {
     return `https://res.cloudinary.com/dr5mrez5h/image/upload/${imageUrl}`;
   }
   
