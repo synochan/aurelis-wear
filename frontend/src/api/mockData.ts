@@ -3,7 +3,8 @@ export const mockProducts = [
   {
     id: 1,
     name: "Classic T-Shirt",
-    price: 29.99,
+    price: 1499.99,
+    priceDisplay: "₱1,499.99",
     category: "Shirts",
     image: "products/classic-tshirt",
     isNew: true,
@@ -22,11 +23,14 @@ export const mockProducts = [
   {
     id: 2,
     name: "Slim Fit Jeans",
-    price: 49.99,
+    price: 2499.99,
+    priceDisplay: "₱2,499.99",
+    discountPercentage: 10,
+    discountPrice: 2249.99,
+    discountPriceDisplay: "₱2,249.99",
     category: "Pants",
     image: "products/slim-jeans",
     isNew: false,
-    discountPercentage: 10,
     colors: [
       { id: 3, name: "Blue", hex_value: "#0000FF" },
       { id: 4, name: "Black", hex_value: "#000000" }
@@ -41,7 +45,8 @@ export const mockProducts = [
   {
     id: 3,
     name: "Running Shoes",
-    price: 89.99,
+    price: 4499.99,
+    priceDisplay: "₱4,499.99",
     category: "Shoes",
     image: "products/running-shoes",
     isNew: true,
@@ -60,11 +65,14 @@ export const mockProducts = [
   {
     id: 4,
     name: "Casual Jacket",
-    price: 79.99,
+    price: 3999.99,
+    priceDisplay: "₱3,999.99",
+    discountPercentage: 15,
+    discountPrice: 3399.99,
+    discountPriceDisplay: "₱3,399.99",
     category: "Outerwear",
     image: "products/casual-jacket",
     isNew: false,
-    discountPercentage: 15,
     colors: [
       { id: 7, name: "Brown", hex_value: "#8B4513" },
       { id: 8, name: "Gray", hex_value: "#808080" }

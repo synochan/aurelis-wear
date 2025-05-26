@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CartItem } from '@/context/CartContext';
+import { formatCurrency } from '@/utils/formatters';
 
 interface OrderSummaryProps {
   cartItems: CartItem[];
@@ -20,6 +21,9 @@ const OrderSummary = ({ cartItems, shippingDetails }: OrderSummaryProps) => {
   
   // Calculate total
   const total = subtotal + tax + shippingFee;
+
+  // Helper to format currency
+  const formatPeso = (amount) => formatCurrency(amount);
   
   return (
     <Card>
@@ -35,7 +39,7 @@ const OrderSummary = ({ cartItems, shippingDetails }: OrderSummaryProps) => {
                 {item.name} ({item.size}, {item.color})
                 <span className="ml-1 text-gray-500">x{item.quantity}</span>
               </span>
-              <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+              <span className="font-medium">{formatPeso(item.price * item.quantity)}</span>
             </div>
           ))}
         </div>
@@ -45,27 +49,27 @@ const OrderSummary = ({ cartItems, shippingDetails }: OrderSummaryProps) => {
           {/* Subtotal */}
           <div className="flex justify-between py-1">
             <span className="text-sm">Subtotal</span>
-            <span className="font-medium">${subtotal.toFixed(2)}</span>
+            <span className="font-medium">{formatPeso(subtotal)}</span>
           </div>
           
           {/* Shipping */}
           <div className="flex justify-between py-1">
             <span className="text-sm">Shipping</span>
             <span className="font-medium">
-              {shippingFee === 0 ? 'Free' : `$${shippingFee.toFixed(2)}`}
+              {shippingFee === 0 ? 'Free' : formatPeso(shippingFee)}
             </span>
           </div>
           
           {/* Tax */}
           <div className="flex justify-between py-1">
             <span className="text-sm">Estimated Tax</span>
-            <span className="font-medium">${tax.toFixed(2)}</span>
+            <span className="font-medium">{formatPeso(tax)}</span>
           </div>
           
           {/* Total */}
           <div className="flex justify-between py-3 border-t border-gray-200 mt-2">
             <span className="font-semibold">Total</span>
-            <span className="font-bold text-lg">${total.toFixed(2)}</span>
+            <span className="font-bold text-lg">{formatPeso(total)}</span>
           </div>
         </div>
         

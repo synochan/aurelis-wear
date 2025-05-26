@@ -12,6 +12,7 @@ import {
 import { X, ArrowRight } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import FeaturedProducts from '@/components/FeaturedProducts';
+import { formatCurrency } from '@/utils/formatters';
 
 const Cart = () => {
   const { cart, removeFromCart, updateQuantity, cartTotal } = useCart();
@@ -96,7 +97,7 @@ const Cart = () => {
                         </Select>
                       </div>
                       <div className="font-medium">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        {formatCurrency(item.price * item.quantity)}
                       </div>
                     </div>
                   </div>
@@ -123,7 +124,7 @@ const Cart = () => {
             <div className="space-y-3 mb-6">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal</span>
-                <span>${cartTotal.toFixed(2)}</span>
+                <span>{formatCurrency(cartTotal)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Shipping</span>
@@ -138,7 +139,7 @@ const Cart = () => {
               
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total</span>
-                <span>${cartTotal.toFixed(2)}</span>
+                <span>{formatCurrency(cartTotal)}</span>
               </div>
             </div>
             

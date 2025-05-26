@@ -4,6 +4,7 @@ import { CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/api';
+import { formatCurrency } from '@/utils/formatters';
 
 const OrderConfirmation = () => {
   const { orderId } = useParams<{ orderId: string }>();
@@ -72,6 +73,9 @@ const OrderConfirmation = () => {
     }, 0);
   };
 
+  // Helper to format currency
+  const formatPeso = (amount: number) => formatCurrency(amount);
+
   const subtotal = orderDetails?.subtotal || calculateSubtotal();
   const shippingCost = orderDetails?.shipping_price || 0;
   const tax = orderDetails?.tax || (subtotal * 0.08); // Default tax rate of 8% if not provided
@@ -115,19 +119,19 @@ const OrderConfirmation = () => {
               <div className="border-t pt-4 mt-4">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
-                  <span>{renderPrice(subtotal)}</span>
+                  <span>{renderPrice(formatPeso(subtotal))}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping:</span>
-                  <span>{renderPrice(shippingCost)}</span>
+                  <span>{renderPrice(formatPeso(shippingCost))}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax:</span>
-                  <span>{renderPrice(tax)}</span>
+                  <span>{renderPrice(formatPeso(tax))}</span>
                 </div>
                 <div className="flex justify-between font-bold mt-2 pt-2 border-t">
                   <span>Total:</span>
-                  <span>{renderPrice(total)}</span>
+                  <span>{renderPrice(formatPeso(total))}</span>
                 </div>
               </div>
               

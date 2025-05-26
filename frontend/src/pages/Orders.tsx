@@ -7,6 +7,7 @@ import { Loader2, ChevronRight, ShoppingBag } from 'lucide-react';
 import { useCurrentUser, api } from '@/api';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from '@/components/ui/use-toast';
+import { formatCurrency } from '@/utils/formatters';
 
 interface Order {
   id: number;
@@ -115,7 +116,7 @@ const Orders = () => {
                       </p>
                     </div>
                     <div className="font-semibold mt-2 md:mt-0">
-                      ${parseFloat(order.total_price.toString()).toFixed(2)}
+                      {formatCurrency(parseFloat(order.total_price.toString()))}
                     </div>
                   </div>
                   

@@ -21,7 +21,7 @@ export const apiClient = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
-  timeout: 10000, // 10 second timeout
+  timeout: 30000, // Increased to 30 second timeout for slow servers
 });
 
 // Add a request interceptor to attach auth token and handle paths
@@ -52,6 +52,7 @@ apiClient.interceptors.request.use(
       config.headers['Authorization'] = `Token ${token}`;
     }
     
+    console.log(`Making request to: ${config.baseURL}${config.url}`, config.params);
     return config;
   },
   (error) => {
@@ -71,6 +72,7 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('token');
     }
     
+    console.error('API Error:', error.message, error.config?.url, error.response?.status);
     return Promise.reject(error);
   }
 ); 

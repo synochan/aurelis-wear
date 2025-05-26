@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Product, Category, ProductImage, Color, Size
 import cloudinary
 import os
+from decimal import Decimal
 
 # Get Cloudinary configuration from environment variables
 CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME', 'dr5mrez5h')
@@ -54,12 +55,14 @@ class ProductListSerializer(serializers.ModelSerializer):
     category_slug = serializers.CharField(source='category.slug')
     image_url = serializers.SerializerMethodField()
     discount_price = serializers.SerializerMethodField()
+    price_display = serializers.SerializerMethodField()
+    discount_price_display = serializers.SerializerMethodField()
     
     class Meta:
         model = Product
         fields = [
-            'id', 'name', 'price', 'discount_price', 'category_name', 
-            'category_slug', 'image_url', 'is_new', 'is_featured', 
+            'id', 'name', 'price', 'price_display', 'discount_price', 'discount_price_display', 
+            'category_name', 'category_slug', 'image_url', 'is_new', 'is_featured', 
             'discount_percentage', 'in_stock'
         ]
     
@@ -84,7 +87,20 @@ class ProductListSerializer(serializers.ModelSerializer):
     
     def get_discount_price(self, obj):
         if obj.discount_percentage:
-            return round(obj.price * (1 - obj.discount_percentage / 100), 2)
+            # Convert percentage to Decimal to avoid type errors
+            discount_percent = Decimal(str(obj.discount_percentage)) / Decimal('100')
+            return obj.price * (Decimal('1') - discount_percent)
+        return None
+    
+    def get_price_display(self, obj):
+        # Format price with Philippine Peso symbol
+        return f"₱{obj.price}"
+    
+    def get_discount_price_display(self, obj):
+        # Format discounted price with Philippine Peso symbol
+        discount_price = self.get_discount_price(obj)
+        if discount_price is not None:
+            return f"₱{discount_price:.2f}"
         return None
 
 class ProductDetailSerializer(serializers.ModelSerializer):
@@ -93,17 +109,32 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     colors = ColorSerializer(many=True)
     sizes = SizeSerializer(many=True)
     discount_price = serializers.SerializerMethodField()
+    price_display = serializers.SerializerMethodField()
+    discount_price_display = serializers.SerializerMethodField()
     
     class Meta:
         model = Product
         fields = [
-            'id', 'name', 'price', 'discount_price', 'description',
-            'category', 'colors', 'sizes', 'images', 'is_new', 
+            'id', 'name', 'price', 'price_display', 'discount_price', 'discount_price_display', 
+            'description', 'category', 'colors', 'sizes', 'images', 'is_new', 
             'is_featured', 'discount_percentage', 'in_stock',
             'created_at', 'updated_at'
         ]
     
     def get_discount_price(self, obj):
         if obj.discount_percentage:
-            return round(obj.price * (1 - obj.discount_percentage / 100), 2)
+            # Convert percentage to Decimal to avoid type errors
+            discount_percent = Decimal(str(obj.discount_percentage)) / Decimal('100')
+            return obj.price * (Decimal('1') - discount_percent)
+        return None
+    
+    def get_price_display(self, obj):
+        # Format price with Philippine Peso symbol
+        return f"₱{obj.price}"
+    
+    def get_discount_price_display(self, obj):
+        # Format discounted price with Philippine Peso symbol
+        discount_price = self.get_discount_price(obj)
+        if discount_price is not None:
+            return f"₱{discount_price:.2f}"
         return None 

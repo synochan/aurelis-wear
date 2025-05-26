@@ -4,11 +4,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { formatCurrency } from '@/utils/formatters';
 
 export interface Product {
   id: number;
   name: string;
   price: number | string;
+  priceDisplay?: string;
+  discountPrice?: number;
+  discountPriceDisplay?: string;
   category: string;
   image: string;
   isNew?: boolean;
@@ -28,17 +32,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const numericPrice = typeof product.price === 'number' ? product.price : parseFloat(String(product.price)) || 0;
   
   // Calculate discounted price if applicable
-  const discountedPrice = product.discountPercentage 
+  const discountedPrice = product.discountPrice ?? (product.discountPercentage 
     ? numericPrice * (1 - product.discountPercentage / 100) 
-    : null;
+    : null);
   
   // Format price function to handle errors
   const formatPrice = (price: number): string => {
     try {
-      return price.toFixed(2);
+      return formatCurrency(price);
     } catch (e) {
       console.error("Error formatting price:", e);
-      return "0.00";
+      return "₱0.00";
     }
   };
 
@@ -101,11 +105,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className="flex items-center gap-2">
             {discountedPrice ? (
               <>
-                <span className="font-semibold text-aurelis">${formatPrice(discountedPrice)}</span>
-                <span className="text-gray-500 text-sm line-through">${formatPrice(numericPrice)}</span>
+                <span className="font-semibold text-aurelis">
+                  {product.discountPriceDisplay || formatPrice(discountedPrice)}
+                </span>
+                <span className="text-gray-500 text-sm line-through">
+                  {product.priceDisplay || formatPrice(numericPrice)}
+                </span>
               </>
             ) : (
-              <span className="font-semibold">${formatPrice(numericPrice)}</span>
+              <span className="font-semibold">
+                {product.priceDisplay || formatPrice(numericPrice)}
+              </span>
             )}
           </div>
         </Link>

@@ -17,6 +17,7 @@ import FeaturedProducts from '@/components/FeaturedProducts';
 import { useProductDetails } from '@/api';
 import { useToast } from '@/hooks/use-toast';
 import { Product } from '@/components/ProductCard';
+import { formatCurrency } from '@/utils/formatters';
 
 // Type for our internal color representation
 interface ColorInfo {
@@ -113,10 +114,46 @@ const ProductDetail = () => {
   
   // 4. Price formatting
   const formattedPrice = React.useMemo(() => {
-    if (!product) return "0.00";
-    return typeof product.price === 'number' 
-      ? product.price.toFixed(2) 
-      : parseFloat(String(product.price)).toFixed(2);
+    if (!product) return "₱0.00";
+    
+    // First check if we have the pre-formatted price display from the backend
+    if (product.priceDisplay) {
+      return product.priceDisplay;
+    }
+    
+    // If not, format it ourselves
+    const price = typeof product.price === 'number' 
+      ? product.price 
+      : parseFloat(String(product.price)) || 0;
+    
+    return formatCurrency(price);
+  }, [product]);
+  
+  // 5. Discounted price formatting
+  const formattedDiscountPrice = React.useMemo(() => {
+    if (!product) return null;
+    
+    // First check if we have the pre-formatted discount price from backend
+    if (product.discountPriceDisplay) {
+      return product.discountPriceDisplay;
+    }
+    
+    // Check if we have calculated discount price
+    if (product.discountPrice) {
+      return formatCurrency(product.discountPrice);
+    }
+    
+    // If we have a percentage, calculate it
+    if (product.discountPercentage) {
+      const price = typeof product.price === 'number' 
+        ? product.price 
+        : parseFloat(String(product.price)) || 0;
+      
+      const discountPrice = price * (1 - (product.discountPercentage / 100));
+      return formatCurrency(discountPrice);
+    }
+    
+    return null;
   }, [product]);
   
   // Set default color and size when product loads
@@ -163,14 +200,26 @@ const ProductDetail = () => {
       });
       return;
     }
-    
-    addToCart({
+
+    // Defensive: check all required fields
+    if (!product.id || !selectedColorId || !selectedSizeId || !quantity) {
+      toast({
+        title: "Missing Data",
+        description: "Some required product information is missing. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const payload = {
       product_id: product.id,
       color_id: selectedColorId,
       size_id: selectedSizeId,
       quantity,
       name: product.name // Optional, for display purposes
-    });
+    };
+    console.log("[AddToCart] Payload:", payload);
+    addToCart(payload);
   };
   
   if (isLoading) {
@@ -241,7 +290,15 @@ const ProductDetail = () => {
             <div className="mb-4">
               {product.isNew && <Badge className="bg-aurelis text-white mb-3">New Release</Badge>}
               <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-              <p className="text-xl font-medium">${formattedPrice}</p>
+              
+              {formattedDiscountPrice ? (
+                <div className="flex items-center gap-2">
+                  <p className="text-xl font-medium text-aurelis">{formattedDiscountPrice}</p>
+                  <p className="text-gray-500 line-through">{formattedPrice}</p>
+                </div>
+              ) : (
+                <p className="text-xl font-medium">{formattedPrice}</p>
+              )}
             </div>
             
             <Separator className="my-6" />
@@ -384,8 +441,8 @@ const ProductDetail = () => {
                 <div className="space-y-4 text-gray-700">
                   <div>
                     <h4 className="font-medium mb-2">Shipping</h4>
-                    <p>Free standard shipping on orders over $50. Delivery within 3-5 business days.</p>
-                    <p className="mt-2">Express shipping available for $12.99 with delivery within 1-2 business days.</p>
+                    <p>Free standard shipping on orders over ₱2,500. Delivery within 3-5 business days.</p>
+                    <p className="mt-2">Express shipping available for ₱599 with delivery within 1-2 business days.</p>
                   </div>
                   
                   <div>

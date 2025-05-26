@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 import { Product } from '@/components/ProductCard';
 import { mockProducts } from './mockData';
+import { formatCurrency } from '@/utils/formatters';
 
 // Helper function to process image URLs
 const processImageUrl = (imageUrl: string): string => {
@@ -24,6 +25,11 @@ const processImageUrl = (imageUrl: string): string => {
   return imageUrl;
 };
 
+// Helper function to format price as Philippine Peso
+export const formatPrice = (price: number): string => {
+  return formatCurrency(price);
+};
+
 export const productService = {
   // Get all products with optional filters
   getProducts: async (filters?: Record<string, string>) => {
@@ -37,10 +43,18 @@ export const productService = {
       
       // Try to get from the API
       const response = await apiClient.get('/products', { params });
-      return response.data.results || response.data;
+      const data = response.data.results || response.data;
+      
+      // If data is empty or not an array, fall back to mock data
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        console.warn('API returned empty results, using mock products');
+        return mockProducts;
+      }
+      
+      return data;
     } catch (error) {
       // If API fails, return mock data
-      console.warn('Using mock products due to API error');
+      console.warn('Using mock products due to API error:', error);
       return mockProducts;
     }
   },
@@ -49,9 +63,13 @@ export const productService = {
   getProductById: async (id: number) => {
     try {
       const response = await apiClient.get(`/products/${id}`);
+      if (!response.data) {
+        throw new Error('Product not found');
+      }
       return response.data;
     } catch (error) {
       // If API fails, try to find the product in the mock data
+      console.warn(`Failed to fetch product ${id} from API, using mock data`);
       const mockProduct = mockProducts.find(product => product.id === id);
       if (mockProduct) {
         return mockProduct;
@@ -67,19 +85,22 @@ export const productService = {
       const response = await apiClient.get('/products', { 
         params: { is_featured: true } 
       });
-      return response.data.results || response.data;
-    } catch (error) {
-      // If filtering by is_featured fails, try getting all products instead
-      try {
-        const allResponse = await apiClient.get('/products');
-        const allProducts = allResponse.data.results || allResponse.data;
-        // Return the first few products as "featured"
-        return Array.isArray(allProducts) ? allProducts.slice(0, 4) : [];
-      } catch (secondError) {
-        // If all API calls fail, return mock data
-        console.warn('Using mock products due to API error');
-        return mockProducts.filter(product => product.isNew || product.discountPercentage > 0);
+      const data = response.data.results || response.data;
+      
+      // If data is empty or not an array, fall back to next approach
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        throw new Error('No featured products found');
       }
+      
+      return data;
+    } catch (error) {
+      console.warn('Failed to get featured products, trying all products:', error);
+      
+      // Fall back to mock data directly since both API endpoints are failing
+      console.warn('Using mock featured products');
+      return mockProducts
+        .filter(product => product.isNew || product.discountPercentage > 0)
+        .slice(0, 4);
     }
   }
 };
@@ -107,6 +128,9 @@ export interface ProductResponse {
   id: number;
   name: string;
   price: number;
+  price_display?: string;
+  discount_price?: number;
+  discount_price_display?: string;
   category: string;
   image: string;
   description?: string;
@@ -126,6 +150,7 @@ export const mapProductFromApi = (apiProduct: ProductResponse): Product => {
       id: 0,
       name: 'Product Not Found',
       price: 0,
+      priceDisplay: '₱0.00',
       category: '',
       image: '',
       description: '',
@@ -163,10 +188,18 @@ export const mapProductFromApi = (apiProduct: ProductResponse): Product => {
       ? processedStringImages 
       : [mainImage];
   
+  // Use server-provided price displays if available, otherwise format locally
+  const priceDisplay = apiProduct.price_display || formatCurrency(apiProduct.price);
+  const discountPriceDisplay = apiProduct.discount_price_display || 
+    (apiProduct.discount_price ? formatCurrency(apiProduct.discount_price) : undefined);
+  
   return {
     id: apiProduct.id,
     name: apiProduct.name,
     price: apiProduct.price,
+    priceDisplay: priceDisplay,
+    discountPrice: apiProduct.discount_price,
+    discountPriceDisplay: discountPriceDisplay,
     category: apiProduct.category,
     image: mainImage,
     isNew: apiProduct.isNew,

@@ -9,6 +9,7 @@ import { useCart, api } from '@/api';
 import ShippingForm from '@/components/checkout/ShippingForm';
 import PaymentForm from '@/components/checkout/PaymentForm';
 import OrderSummary from '@/components/checkout/OrderSummary';
+import { formatCurrency } from '@/utils/formatters';
 
 // Initialize Stripe (we'll load the publishable key from the API)
 let stripePromise: Promise<any> | null = null;
@@ -100,6 +101,9 @@ const Checkout = () => {
     // Return total (rounded to 2 decimal places)
     return Math.round((subtotal + tax + shippingFee) * 100) / 100;
   };
+
+  // Helper to format currency
+  const formatPeso = (amount) => formatCurrency(amount);
 
   // Get Stripe configuration
   const fetchStripeConfig = async () => {
