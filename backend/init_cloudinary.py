@@ -14,10 +14,10 @@ def check_cloudinary_setup():
     """Check Cloudinary configuration and connection."""
     print("Checking Cloudinary configuration...")
     
-    # Get Cloudinary configuration
-    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME', settings.CLOUDINARY_STORAGE.get('CLOUD_NAME'))
-    api_key = os.environ.get('CLOUDINARY_API_KEY', settings.CLOUDINARY_STORAGE.get('API_KEY'))
-    api_secret = os.environ.get('CLOUDINARY_API_SECRET', settings.CLOUDINARY_STORAGE.get('API_SECRET'))
+    # Force correct cloud name directly
+    cloud_name = "dr5mrez5h"  # Hard-code the correct value
+    api_key = os.environ.get('CLOUDINARY_API_KEY', '656319486157362')
+    api_secret = os.environ.get('CLOUDINARY_API_SECRET', 'VvLFCBzDl-LnWuYzzTCz1Qxy4NE')
     
     print(f"Cloud Name: {cloud_name}")
     print(f"API Key: {'*' * len(api_key) if api_key else 'Not set'}")
@@ -27,7 +27,7 @@ def check_cloudinary_setup():
         print("ERROR: Missing Cloudinary credentials!")
         return False
     
-    # Configure Cloudinary
+    # Configure Cloudinary directly with the correct values
     cloudinary.config(
         cloud_name=cloud_name,
         api_key=api_key,
