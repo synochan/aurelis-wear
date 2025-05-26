@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Product, Category, ProductImage, Color, Size
+import cloudinary
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,9 +15,24 @@ class ProductImageSerializer(serializers.ModelSerializer):
         fields = ['id', 'image', 'is_primary', 'image_url']
     
     def get_image_url(self, obj):
-        request = self.context.get('request')
-        if obj.image and hasattr(obj.image, 'url'):
-            return request.build_absolute_uri(obj.image.url) if request else obj.image.url
+        try:
+            if obj.image:
+                # If it's a cloudinary image
+                if hasattr(obj.image, 'public_id'):
+                    return obj.image.url
+                # If it has a URL attribute
+                elif hasattr(obj.image, 'url'):
+                    request = self.context.get('request')
+                    return request.build_absolute_uri(obj.image.url) if request else obj.image.url
+                # If it's a string (possibly a cloudinary path)
+                elif isinstance(obj.image, str):
+                    if obj.image.startswith('http'):
+                        return obj.image
+                    else:
+                        # Assume it's a cloudinary public ID
+                        return f"https://res.cloudinary.com/aurelis/image/upload/{obj.image}"
+        except Exception as e:
+            print(f"Error getting image URL: {e}")
         return None
 
 class ColorSerializer(serializers.ModelSerializer):

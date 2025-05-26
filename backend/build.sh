@@ -11,6 +11,10 @@ python manage.py collectstatic --no-input
 # Run migrations
 python manage.py migrate
 
+# Initialize Cloudinary
+echo "Checking Cloudinary configuration..."
+python init_cloudinary.py
+
 # Load sample data if needed (uncomment if you want to load sample data)
 # python load_sample_data.py
 
@@ -18,4 +22,4 @@ python manage.py migrate
 mkdir -p static
 
 # Print debug information
-echo "Build completed successfully" 
+echo "Build completed successfully"
