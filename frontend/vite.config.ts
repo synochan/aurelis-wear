@@ -4,46 +4,13 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  server: {
-    host: "::",
-    port: 8080,
-  },
-  plugins: [
-    react(),
-  ],
-  build: {
-    outDir: 'dist',
-    emptyOutDir: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['@tanstack/react-query'],
-        },
-        assetFileNames: 'assets/[name].[hash].[ext]',
-      }
-    },
-    sourcemap: true,
-    chunkSizeWarningLimit: 1000,
-    assetsDir: 'assets',
-  },
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-    },
-    extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json']
+    }
   },
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
-    esbuildOptions: {
-      resolveExtensions: ['.js', '.jsx', '.ts', '.tsx']
-    },
-    force: true,
-  },
-  esbuild: {
-    logOverride: { 'this-is-undefined-in-esm': 'silent' }
-  },
-  // SPA fallback configuration for history API
-  appType: 'spa',
-  base: '/',
+  build: {
+    outDir: 'dist'
+  }
 });

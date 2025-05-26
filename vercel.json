@@ -2,11 +2,5 @@
   "rewrites": [
     { "source": "/api/:path*", "destination": "https://aurelis-wear-api.onrender.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "routes": [
-    { "handle": "filesystem" },
-    { "src": "/.*", "dest": "/fallback.html", "status": 404 }
   ]
 } 

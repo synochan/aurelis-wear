@@ -3,10 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <base href="/" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <!-- Ensure favicon is loaded with priority -->
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <title>Aurelis Wear Shop</title>
     <meta name="description" content="Elevate your style with premium fashion clothing from Aurelis Wear Shop" />
     <meta name="author" content="Aurelis" />
@@ -27,35 +24,6 @@
     <meta name="twitter:title" content="Aurelis Wear Shop | Premium Fashion" />
     <meta name="twitter:description" content="Elevate your style with premium fashion clothing from Aurelis Wear Shop" />
     <meta name="twitter:image" content="https://aurelis-wear.vercel.app/assets/banner.png" />
-    
-    <!-- Handle SPA routing -->
-    <script type="text/javascript">
-      // Force URL normalization for SPA routing
-      (function() {
-        // Single-page app handling for history API
-        var segmentCount = 0;
-        var location = window.location;
-        
-        // If we're not at the root and there's no file extension (likely a route)
-        var path = location.pathname;
-        var isNotRoot = path !== '/' && path !== '/index.html';
-        var hasNoExtension = path.indexOf('.') === -1;
-        
-        if (isNotRoot && hasNoExtension) {
-          // Store the path to restore after redirect
-          sessionStorage.setItem('redirect_path', path + location.search + location.hash);
-        }
-
-        // Check if we should redirect from a stored path
-        window.addEventListener('DOMContentLoaded', function() {
-          var redirectPath = sessionStorage.getItem('redirect_path');
-          if (redirectPath && path === '/') {
-            sessionStorage.removeItem('redirect_path');
-            history.replaceState(null, null, redirectPath);
-          }
-        });
-      })();
-    </script>
   </head>
 
   <body>
