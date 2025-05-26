@@ -115,44 +115,31 @@ const ProductDetail = () => {
   // 4. Price formatting
   const formattedPrice = React.useMemo(() => {
     if (!product) return "₱0.00";
-    
-    // First check if we have the pre-formatted price display from the backend
-    if (product.priceDisplay) {
+    if ('priceDisplay' in product && product.priceDisplay) {
       return product.priceDisplay;
     }
-    
-    // If not, format it ourselves
     const price = typeof product.price === 'number' 
       ? product.price 
       : parseFloat(String(product.price)) || 0;
-    
     return formatCurrency(price);
   }, [product]);
   
   // 5. Discounted price formatting
   const formattedDiscountPrice = React.useMemo(() => {
     if (!product) return null;
-    
-    // First check if we have the pre-formatted discount price from backend
-    if (product.discountPriceDisplay) {
+    if ('discountPriceDisplay' in product && product.discountPriceDisplay) {
       return product.discountPriceDisplay;
     }
-    
-    // Check if we have calculated discount price
-    if (product.discountPrice) {
+    if ('discountPrice' in product && product.discountPrice) {
       return formatCurrency(product.discountPrice);
     }
-    
-    // If we have a percentage, calculate it
-    if (product.discountPercentage) {
+    if ('discountPercentage' in product && product.discountPercentage) {
       const price = typeof product.price === 'number' 
         ? product.price 
         : parseFloat(String(product.price)) || 0;
-      
       const discountPrice = price * (1 - (product.discountPercentage / 100));
       return formatCurrency(discountPrice);
     }
-    
     return null;
   }, [product]);
   
@@ -288,7 +275,7 @@ const ProductDetail = () => {
           <div>
             {/* Tags & Title */}
             <div className="mb-4">
-              {product.isNew && <Badge className="bg-aurelis text-white mb-3">New Release</Badge>}
+              {product?.isNew && <Badge className="bg-aurelis text-white mb-3">New Release</Badge>}
               <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
               
               {formattedDiscountPrice ? (

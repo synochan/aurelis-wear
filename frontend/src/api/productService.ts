@@ -123,7 +123,7 @@ export interface ProductResponse {
   price_display?: string;
   discount_price?: number;
   discount_price_display?: string;
-  category: string;
+  categories?: {id: number; name: string; slug: string}[];
   image: string;
   description?: string;
   isNew?: boolean;
@@ -143,7 +143,7 @@ export const mapProductFromApi = (apiProduct: ProductResponse): Product => {
       name: 'Product Not Found',
       price: 0,
       priceDisplay: '₱0.00',
-      category: '',
+      categories: [],
       image: '',
       description: '',
       colors: [],
@@ -192,16 +192,13 @@ export const mapProductFromApi = (apiProduct: ProductResponse): Product => {
     priceDisplay: priceDisplay,
     discountPrice: apiProduct.discount_price,
     discountPriceDisplay: discountPriceDisplay,
-    category: apiProduct.category,
+    categories: apiProduct.categories || [],
     image: mainImage,
     isNew: apiProduct.isNew,
     discountPercentage: apiProduct.discountPercentage,
     description: apiProduct.description || '',
-    // Include complete color objects for ProductDetail component
     colors: apiProduct.colors || [],
-    // Include size objects for ProductDetail component
     sizes: apiProduct.sizes || [],
-    // Include all product images
     images: finalImages
   };
 };
