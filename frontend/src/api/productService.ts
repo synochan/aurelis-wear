@@ -1,6 +1,28 @@
 import { apiClient } from './client';
 import { Product } from '@/components/ProductCard';
 
+// Helper function to process image URLs
+const processImageUrl = (imageUrl: string): string => {
+  if (!imageUrl) return "/placeholder.svg";
+  
+  // If it's already an absolute URL (starts with http or https), use it as is
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  
+  // If it's a Cloudinary ID, construct the URL
+  if (imageUrl.includes('image/upload/') || imageUrl.includes('products/')) {
+    return `https://res.cloudinary.com/aurelis/image/upload/${imageUrl}`;
+  }
+  
+  // If it's a relative path without a leading slash, add one
+  if (!imageUrl.startsWith('/')) {
+    return `/${imageUrl}`;
+  }
+  
+  return imageUrl;
+};
+
 export const productService = {
   // Get all products with optional filters
   getProducts: async (filters?: Record<string, string>) => {
@@ -95,12 +117,40 @@ export const mapProductFromApi = (apiProduct: ProductResponse): Product => {
     };
   }
   
+  // Process the main image
+  const mainImage = processImageUrl(apiProduct.image);
+  
+  // Process the array of images if present
+  let processedStringImages: string[] = [];
+  let processedObjectImages: ProductImage[] = [];
+  
+  if (apiProduct.images?.length) {
+    // Sort the images into appropriate arrays based on type
+    apiProduct.images.forEach(img => {
+      if (typeof img === 'string') {
+        processedStringImages.push(processImageUrl(img));
+      } else if (img && typeof img === 'object' && 'image' in img) {
+        processedObjectImages.push({
+          ...img,
+          image: processImageUrl(img.image)
+        });
+      }
+    });
+  }
+  
+  // Determine which array to use based on what we have
+  const finalImages = processedObjectImages.length > 0 
+    ? processedObjectImages 
+    : processedStringImages.length > 0 
+      ? processedStringImages 
+      : [mainImage];
+  
   return {
     id: apiProduct.id,
     name: apiProduct.name,
     price: apiProduct.price,
     category: apiProduct.category,
-    image: apiProduct.image || '/placeholder.svg',
+    image: mainImage,
     isNew: apiProduct.isNew,
     discountPercentage: apiProduct.discountPercentage,
     description: apiProduct.description || '',
@@ -109,6 +159,6 @@ export const mapProductFromApi = (apiProduct: ProductResponse): Product => {
     // Include size objects for ProductDetail component
     sizes: apiProduct.sizes || [],
     // Include all product images
-    images: apiProduct.images?.length ? apiProduct.images : [apiProduct.image || '/placeholder.svg']
+    images: finalImages
   };
 };

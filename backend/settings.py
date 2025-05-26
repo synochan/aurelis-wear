@@ -4,6 +4,8 @@ Django settings for backend project.
 
 from pathlib import Path
 import os
+# Import and apply our SQLite patch
+import patch_sqlite  # This will patch dj_database_url
 import dj_database_url
 from dotenv import load_dotenv
 
@@ -51,9 +53,9 @@ INSTALLED_APPS = [
 
 # Cloudinary settings
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'aurelis',
-    'API_KEY': '656319486157362',
-    'API_SECRET': 'VvLFCBzDl-LnWuYzzTCz1Qxy4NE'
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'aurelis'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '656319486157362'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'VvLFCBzDl-LnWuYzzTCz1Qxy4NE')
 }
 
 # Use Cloudinary for default file storage
@@ -96,14 +98,44 @@ WSGI_APPLICATION = 'wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-# For Neon PostgreSQL support
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL', 'sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')),
-        conn_max_age=600,  # Set to 600 seconds (10 minutes) for Render
-        ssl_require=False if DEBUG else True
-    )
-}
+
+# Set the database connection
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///db.sqlite3')
+
+# Database configuration based on URL
+if database_url.startswith('sqlite'):
+    # Direct SQLite configuration without dj_database_url
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, database_url.replace('sqlite:///', '')),
+        }
+    }
+else:
+    # For PostgreSQL and other database types
+    try:
+        db_config = dj_database_url.parse(database_url)
+        
+        # Add additional options for Neon PostgreSQL
+        if db_config.get('ENGINE') == 'django.db.backends.postgresql':
+            if 'OPTIONS' not in db_config:
+                db_config['OPTIONS'] = {}
+            db_config['OPTIONS']['sslmode'] = 'require'
+            db_config['CONN_MAX_AGE'] = 600  # 10 minutes
+            db_config['CONN_HEALTH_CHECKS'] = True
+        
+        DATABASES = {
+            'default': db_config
+        }
+        print(f"Using database engine: {db_config.get('ENGINE')}")
+    except Exception as e:
+        print(f"Error configuring database: {e}. Falling back to SQLite.")
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            }
+        }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

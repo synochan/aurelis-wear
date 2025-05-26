@@ -13,7 +13,7 @@ from products.views import (
 )
 from authentication.views import (
     RegisterView, LoginView, LogoutView, UserView, 
-    ChangePasswordView, verify_email, resend_verification
+    ChangePasswordView
 )
 from cart.views import CartViewSet, CartItemViewSet
 from orders.views import OrderViewSet
@@ -63,8 +63,6 @@ api_urlpatterns = [
     path('auth/logout/', LogoutView.as_view(), name='logout'),
     path('auth/user/', UserView.as_view(), name='user'),
     path('auth/change-password/', ChangePasswordView.as_view(), name='change-password'),
-    path('auth/verify-email/<str:token>/', verify_email, name='verify-email'),
-    path('auth/resend-verification/', resend_verification, name='resend-verification'),
     
     # Payments
     path('payments/config/', StripeConfigView.as_view(), name='stripe-config'),

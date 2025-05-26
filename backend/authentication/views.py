@@ -6,10 +6,8 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.conf import settings
-from django.core.mail import send_mail
 from django.urls import reverse
 from django.http import JsonResponse
-import uuid
 from .serializers import (
     RegisterSerializer,
     LoginSerializer,
@@ -32,12 +30,9 @@ class RegisterView(generics.CreateAPIView):
         
         token, created = Token.objects.get_or_create(user=user)
         
-        # Generate verification token
-        user.profile.verification_token = uuid.uuid4()
+        # Set email as verified by default
+        user.profile.email_verified = True
         user.profile.save()
-        
-        # Send verification email
-        self.send_verification_email(user)
         
         return Response({
             "token": token.key,
@@ -47,35 +42,8 @@ class RegisterView(generics.CreateAPIView):
                 "firstName": user.first_name,
                 "lastName": user.last_name,
                 "emailVerified": user.profile.email_verified,
-            },
-            "message": "Please check your email to verify your account."
+            }
         }, status=status.HTTP_201_CREATED)
-    
-    def send_verification_email(self, user):
-        frontend_url = settings.FRONTEND_URL or "http://localhost:5173"
-        verification_url = f"{frontend_url}/verify-email/{user.profile.verification_token}"
-        
-        subject = "Verify your email address for Aurelis Wear"
-        message = f"""
-        Hello {user.first_name},
-        
-        Thank you for registering at Aurelis Wear! Please verify your email address by clicking the link below:
-        
-        {verification_url}
-        
-        This link will expire in 24 hours.
-        
-        Best regards,
-        Aurelis Wear Team
-        """
-        
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [user.email],
-            fail_silently=False,
-        )
 
 class LoginView(APIView):
     """
@@ -118,75 +86,6 @@ class LoginView(APIView):
                 "emailVerified": authenticated_user.profile.email_verified,
             }
         })
-
-@api_view(['GET'])
-@permission_classes([permissions.AllowAny])
-def verify_email(request, token):
-    """Verify user email with token"""
-    try:
-        profile = UserProfile.objects.get(verification_token=token)
-        
-        if profile.email_verified:
-            return Response({"detail": "Email already verified."}, status=status.HTTP_200_OK)
-        
-        profile.email_verified = True
-        profile.save()
-        
-        return Response({
-            "detail": "Email successfully verified.",
-            "email": profile.user.email
-        }, status=status.HTTP_200_OK)
-    except UserProfile.DoesNotExist:
-        return Response({"detail": "Invalid or expired verification token."}, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['POST'])
-@permission_classes([permissions.AllowAny])
-def resend_verification(request):
-    """Resend verification email"""
-    email = request.data.get('email')
-    
-    if not email:
-        return Response({"detail": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
-    
-    try:
-        user = User.objects.get(email=email)
-        
-        if user.profile.email_verified:
-            return Response({"detail": "Email already verified."}, status=status.HTTP_200_OK)
-        
-        # Generate new verification token
-        user.profile.verification_token = uuid.uuid4()
-        user.profile.save()
-        
-        # Send verification email
-        frontend_url = settings.FRONTEND_URL or "http://localhost:5173"
-        verification_url = f"{frontend_url}/verify-email/{user.profile.verification_token}"
-        
-        subject = "Verify your email address for Aurelis Wear"
-        message = f"""
-        Hello {user.first_name},
-        
-        You requested a new verification link for your Aurelis Wear account. Please verify your email address by clicking the link below:
-        
-        {verification_url}
-        
-        This link will expire in 24 hours.
-        
-        Best regards,
-        Aurelis Wear Team
-        """
-        
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [user.email],
-            fail_silently=False,
-        )
-        
-        return Response({"detail": "Verification email sent."}, status=status.HTTP_200_OK)
-    except User.DoesNotExist:
-        return Response({"detail": "No account found with that email address."}, status=status.HTTP_404_NOT_FOUND)
 
 class UserView(generics.RetrieveUpdateAPIView):
     """

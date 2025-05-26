@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',  # Token authentication
     'corsheaders',
     'django_filters',  # For filtering
+    'cloudinary',      # Cloudinary for image storage
+    'cloudinary_storage',  # Cloudinary storage backend
     # Local apps
     'products',
     'authentication',
@@ -166,6 +168,16 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Configure WhiteNoise for static file serving
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Cloudinary settings
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'aurelis'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '656319486157362'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'VvLFCBzDl-LnWuYzzTCz1Qxy4NE')
+}
+
+# Use Cloudinary for default file storage
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

@@ -44,6 +44,23 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   
+  // Process image URL to ensure it works correctly
+  const getImageUrl = (imageUrl: string) => {
+    if (!imageUrl) return "/placeholder.svg";
+    
+    // If it's already an absolute URL (starts with http or https), use it as is
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    
+    // If it's a relative path without a leading slash, add one
+    if (!imageUrl.startsWith('/')) {
+      return `/${imageUrl}`;
+    }
+    
+    return imageUrl;
+  };
+  
   // Process all data from product in a consistent order of hooks
   // 1. Colors normalization
   const normalizedColors = React.useMemo(() => {
@@ -79,13 +96,13 @@ const ProductDetail = () => {
     if (product.images && product.images.length > 0) {
       // Check if we have image objects with URLs
       if (typeof product.images[0] === 'object' && 'image' in product.images[0]) {
-        return product.images.map((img: any) => img.image);
+        return product.images.map((img: any) => getImageUrl(img.image));
       }
       // Direct image URLs
-      return product.images as string[];
+      return (product.images as string[]).map(img => getImageUrl(img));
     }
     
-    return [product.image || "/placeholder.svg"];
+    return [getImageUrl(product.image) || "/placeholder.svg"];
   }, [product]);
   
   // 4. Price formatting
@@ -182,7 +199,11 @@ const ProductDetail = () => {
               <img 
                 src={processedImages[activeImage]} 
                 alt={product.name}
-                className="w-full h-full object-cover" 
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/placeholder.svg";
+                }}
               />
             </div>
             <div className="grid grid-cols-4 gap-2">
@@ -195,7 +216,11 @@ const ProductDetail = () => {
                   <img 
                     src={image} 
                     alt={`${product.name} view ${i+1}`}
-                    className="w-full h-full object-cover" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder.svg";
+                    }}
                   />
                 </div>
               ))}

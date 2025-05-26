@@ -41,15 +41,41 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       return "0.00";
     }
   };
+
+  // Process image URL to ensure it works correctly
+  const getImageUrl = (imageUrl: string) => {
+    if (!imageUrl) return "/placeholder.svg";
+    
+    // If it's already an absolute URL (starts with http or https), use it as is
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    
+    // If it's a Cloudinary ID, construct the URL
+    if (imageUrl.includes('image/upload/') || imageUrl.includes('products/')) {
+      return `https://res.cloudinary.com/aurelis/image/upload/${imageUrl}`;
+    }
+    
+    // If it's a relative path without a leading slash, add one
+    if (!imageUrl.startsWith('/')) {
+      return `/${imageUrl}`;
+    }
+    
+    return imageUrl;
+  };
   
   return (
     <Card className="border-none overflow-hidden group hover-scale">
       <Link to={`/product/${product.id}`} className="block">
         <div className="relative aspect-square overflow-hidden bg-gray-100">
           <img 
-            src={product.image || "/placeholder.svg"} 
+            src={getImageUrl(product.image)} 
             alt={product.name}
             className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "/placeholder.svg";
+            }}
           />
           
           {/* Wishlist button */}

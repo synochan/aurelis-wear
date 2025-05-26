@@ -129,6 +129,33 @@ If you have existing data in SQLite that you need to migrate to Neon:
    python migrate_to_neon.py
    ```
 
+## Image Storage (Cloudinary)
+
+The application uses Cloudinary for image storage. To set up Cloudinary:
+
+1. Create a Cloudinary account at [https://cloudinary.com](https://cloudinary.com)
+2. Get your Cloud Name, API Key, and API Secret from the Cloudinary dashboard
+3. Add these credentials to your environment variables:
+   ```
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_api_key
+   CLOUDINARY_API_SECRET=your_api_secret
+   ```
+
+### Migrating Images to Cloudinary
+
+If you have local images that need to be uploaded to Cloudinary:
+
+1. Make sure your Cloudinary credentials are set in your environment variables
+2. Run the migration script:
+   ```
+   # On Linux/macOS
+   ./migrate-images.sh
+   
+   # On Windows
+   ./migrate-images.ps1
+   ```
+
 ## API Documentation
 
 The API provides endpoints for:
