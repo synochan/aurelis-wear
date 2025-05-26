@@ -28,9 +28,6 @@ eggs/
 # node_modules/
 # frontend/node_modules/
 
-# Cache
-.vercel/
-
 # Environment files (environment variables are set in Vercel dashboard)
 .env
 .env.*
