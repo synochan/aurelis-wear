@@ -36,9 +36,13 @@ import { CommandDialog, CommandInput, CommandList, CommandItem, CommandEmpty } f
 import { api as apiClient } from '@/api';
 
 const categories = [
-  { name: "Pants", slug: "pants" },
-  { name: "T-Shirt", slug: "t-shirt" },
+  { name: "Men", slug: "men" },
+  { name: "Women", slug: "women" },
+  { name: "Kids", slug: "kids" },
+  { name: "Accessories", slug: "accessories" },
   { name: "Shoes", slug: "shoes" },
+  { name: "T-Shirt", slug: "t-shirt" },
+  { name: "Pants", slug: "pants" },
 ];
 
 const Navbar = () => {
@@ -103,9 +107,9 @@ const Navbar = () => {
                           <NavigationMenuLink asChild>
                             <Link
                               to={`/products?category=${category.slug}`}
-                              className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground font-medium"
+                              className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground"
                             >
-                              View All {category.name}
+                              {category.name}
                             </Link>
                           </NavigationMenuLink>
                         </li>
