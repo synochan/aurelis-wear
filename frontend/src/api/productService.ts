@@ -1,5 +1,6 @@
 import { apiClient } from './client';
 import { Product } from '@/components/ProductCard';
+import { mockProducts } from './mockData';
 
 // Helper function to process image URLs
 const processImageUrl = (imageUrl: string): string => {
@@ -34,11 +35,13 @@ export const productService = {
         delete params.category__slug;
       }
       
+      // Try to get from the API
       const response = await apiClient.get('/products', { params });
       return response.data.results || response.data;
     } catch (error) {
-      // Silently handle errors
-      return [];
+      // If API fails, return mock data
+      console.warn('Using mock products due to API error');
+      return mockProducts;
     }
   },
   
@@ -48,6 +51,11 @@ export const productService = {
       const response = await apiClient.get(`/products/${id}`);
       return response.data;
     } catch (error) {
+      // If API fails, try to find the product in the mock data
+      const mockProduct = mockProducts.find(product => product.id === id);
+      if (mockProduct) {
+        return mockProduct;
+      }
       throw error;
     }
   },
@@ -68,8 +76,9 @@ export const productService = {
         // Return the first few products as "featured"
         return Array.isArray(allProducts) ? allProducts.slice(0, 4) : [];
       } catch (secondError) {
-        // If all fails, return empty array
-        return [];
+        // If all API calls fail, return mock data
+        console.warn('Using mock products due to API error');
+        return mockProducts.filter(product => product.isNew || product.discountPercentage > 0);
       }
     }
   }

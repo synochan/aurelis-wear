@@ -1,6 +1,10 @@
 from rest_framework import serializers
 from .models import Product, Category, ProductImage, Color, Size
 import cloudinary
+import os
+
+# Get Cloudinary configuration from environment variables
+CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME', 'dr5mrez5h')
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,7 +23,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
             if obj.image:
                 # If it's a cloudinary image
                 if hasattr(obj.image, 'public_id'):
-                    return obj.image.url
+                    return f"https://res.cloudinary.com/{CLOUDINARY_CLOUD_NAME}/image/upload/{obj.image.public_id}"
                 # If it has a URL attribute
                 elif hasattr(obj.image, 'url'):
                     request = self.context.get('request')
@@ -30,7 +34,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
                         return obj.image
                     else:
                         # Assume it's a cloudinary public ID
-                        return f"https://res.cloudinary.com/dr5mrez5h/image/upload/{obj.image}"
+                        return f"https://res.cloudinary.com/{CLOUDINARY_CLOUD_NAME}/image/upload/{obj.image}"
         except Exception as e:
             print(f"Error getting image URL: {e}")
         return None
@@ -66,8 +70,16 @@ class ProductListSerializer(serializers.ModelSerializer):
         if not primary_image:
             primary_image = obj.images.first()
         
-        if primary_image and hasattr(primary_image.image, 'url'):
-            return request.build_absolute_uri(primary_image.image.url) if request else primary_image.image.url
+        if primary_image:
+            if hasattr(primary_image.image, 'public_id'):
+                return f"https://res.cloudinary.com/{CLOUDINARY_CLOUD_NAME}/image/upload/{primary_image.image.public_id}"
+            elif hasattr(primary_image.image, 'url'):
+                return request.build_absolute_uri(primary_image.image.url) if request else primary_image.image.url
+            elif isinstance(primary_image.image, str):
+                if primary_image.image.startswith('http'):
+                    return primary_image.image
+                else:
+                    return f"https://res.cloudinary.com/{CLOUDINARY_CLOUD_NAME}/image/upload/{primary_image.image}"
         return None
     
     def get_discount_price(self, obj):

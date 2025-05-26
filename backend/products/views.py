@@ -1,9 +1,13 @@
-from rest_framework import viewsets, generics, filters, permissions
+from rest_framework import viewsets, generics, filters, permissions, status
+from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django_filters import rest_framework as django_filters
 from .models import Product, Category, Color, Size
 from .serializers import ProductListSerializer, ProductDetailSerializer, CategorySerializer
-from rest_framework.response import Response
+import logging
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 class ProductFilter(django_filters.FilterSet):
     category = django_filters.CharFilter(field_name='category__slug')
@@ -35,6 +39,44 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         context = super().get_serializer_context()
         context.update({'request': self.request})
         return context
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            # Get queryset with filters applied
+            queryset = self.filter_queryset(self.get_queryset())
+            
+            # Handle is_featured parameter separately if present
+            is_featured = request.query_params.get('is_featured', None)
+            if is_featured is not None:
+                # Convert string parameter to boolean
+                is_featured_bool = is_featured.lower() == 'true'
+                queryset = queryset.filter(is_featured=is_featured_bool)
+            
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            logger.error(f"Error in ProductViewSet.list: {str(e)}")
+            return Response(
+                {"error": "An error occurred while retrieving products"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except Exception as e:
+            logger.error(f"Error in ProductViewSet.retrieve: {str(e)}")
+            return Response(
+                {"error": "An error occurred while retrieving the product"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class FeaturedProductsView(generics.ListAPIView):
     """
@@ -44,14 +86,28 @@ class FeaturedProductsView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
     
     def get_queryset(self):
-        # Use a simpler, more robust approach
-        featured = Product.objects.filter(is_featured=True)
-        return featured if featured.exists() else Product.objects.all()[:4]
+        try:
+            # Use a simpler, more robust approach
+            featured = Product.objects.filter(is_featured=True)
+            return featured if featured.exists() else Product.objects.all()[:4]
+        except Exception as e:
+            logger.error(f"Error in FeaturedProductsView.get_queryset: {str(e)}")
+            return Product.objects.none()  # Return empty queryset on error
     
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context.update({'request': self.request})
         return context
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            return super().list(request, *args, **kwargs)
+        except Exception as e:
+            logger.error(f"Error in FeaturedProductsView.list: {str(e)}")
+            return Response(
+                {"error": "An error occurred while retrieving featured products"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     """
