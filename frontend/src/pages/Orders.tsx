@@ -18,6 +18,7 @@ interface Order {
     id: number;
     product_name: string;
     quantity: number;
+    image?: string;
   }>;
 }
 
@@ -72,6 +73,21 @@ const Orders = () => {
     navigate(`/order-confirmation/${orderId}`);
   };
 
+  // Helper to process image URLs (copied from ProductCard)
+  const getImageUrl = (imageUrl: string) => {
+    if (!imageUrl) return "/placeholder.svg";
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    if (imageUrl.includes('image/upload/') || imageUrl.includes('products/')) {
+      return `https://res.cloudinary.com/dr5mrez5h/image/upload/${imageUrl}`;
+    }
+    if (!imageUrl.startsWith('/')) {
+      return `/${imageUrl}`;
+    }
+    return imageUrl;
+  };
+
   if (userLoading || isLoading) {
     return (
       <div className="container mx-auto py-16 flex justify-center">
@@ -122,8 +138,14 @@ const Orders = () => {
                   
                   <div className="text-sm text-gray-600 mb-4">
                     {order.items.slice(0, 2).map((item) => (
-                      <div key={item.id} className="flex justify-between">
-                        <span>{item.product_name}</span>
+                      <div key={item.id} className="flex items-center gap-3 mb-2">
+                        <img
+                          src={getImageUrl(item.image || "")}
+                          alt={item.product_name}
+                          className="w-12 h-12 object-cover rounded bg-gray-100 border"
+                          onError={e => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
+                        />
+                        <span className="flex-1">{item.product_name}</span>
                         <span>x{item.quantity}</span>
                       </div>
                     ))}
