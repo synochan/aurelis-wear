@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -33,6 +33,7 @@ import { useCart } from '@/context/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { CommandDialog, CommandInput, CommandList, CommandItem, CommandEmpty } from '@/components/ui/command';
+import { api as apiClient } from '@/api';
 
 const categories = [
   { name: "Men", subcategories: ["T-Shirts", "Hoodies", "Pants", "Shoes"] },
@@ -50,6 +51,9 @@ const Navbar = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   const handleLogout = () => {
     logout(undefined, {
@@ -62,6 +66,21 @@ const Navbar = () => {
       }
     });
   };
+
+  useEffect(() => {
+    if (!searchQuery) {
+      setSearchResults([]);
+      return;
+    }
+    setSearchLoading(true);
+    apiClient.get('/products', { params: { search: searchQuery } })
+      .then(res => {
+        const data = res.data.results || res.data;
+        setSearchResults(data);
+      })
+      .catch(() => setSearchResults([]))
+      .finally(() => setSearchLoading(false));
+  }, [searchQuery]);
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
@@ -284,12 +303,30 @@ const Navbar = () => {
       )}
 
       <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
-        <CommandInput placeholder="Search for products..." />
+        <CommandInput
+          placeholder="Search for products..."
+          value={searchQuery}
+          onValueChange={setSearchQuery}
+        />
         <CommandList>
-          {/* TODO: Populate with product search results */}
-          <CommandEmpty>No products found.</CommandEmpty>
-          {/* Example static items, replace with real search results */}
-          <CommandItem onSelect={() => { setSearchOpen(false); navigate('/products'); }}>All Products</CommandItem>
+          {searchLoading && <CommandItem>Loading...</CommandItem>}
+          {!searchLoading && searchResults.length === 0 && searchQuery && (
+            <CommandEmpty>No products found.</CommandEmpty>
+          )}
+          {searchResults.map(product => (
+            <CommandItem
+              key={product.id}
+              onSelect={() => {
+                setSearchOpen(false);
+                navigate(`/products/${product.id}`);
+              }}
+            >
+              {product.name}
+            </CommandItem>
+          ))}
+          {!searchQuery && (
+            <CommandItem onSelect={() => { setSearchOpen(false); navigate('/products'); }}>All Products</CommandItem>
+          )}
         </CommandList>
       </CommandDialog>
     </header>
