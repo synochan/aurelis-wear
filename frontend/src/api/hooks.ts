@@ -31,7 +31,6 @@ export function useProducts(filters?: Record<string, string>) {
         const data = await productService.getProducts(filters);
         return Array.isArray(data) ? data.map(mapProductFromApi) : [];
       } catch (error) {
-        console.error("Error in useProducts:", error);
         return [];
       }
     },
@@ -46,11 +45,10 @@ export function useFeaturedProducts() {
     queryKey: queryKeys.products.featured,
     queryFn: async () => {
       try {
-        // First try with the filtered products approach
+        // First try with the featured products approach
         const data = await productService.getFeaturedProducts();
         return Array.isArray(data) ? data.map(mapProductFromApi) : [];
       } catch (error) {
-        console.error("Error in useFeaturedProducts:", error);
         // If featured endpoint fails, fallback to getting all products
         try {
           const allProducts = await productService.getProducts();
@@ -59,7 +57,6 @@ export function useFeaturedProducts() {
             ? allProducts.slice(0, 4).map(mapProductFromApi) 
             : [];
         } catch (fallbackError) {
-          console.error("Fallback error in useFeaturedProducts:", fallbackError);
           return [];
         }
       }
@@ -78,14 +75,13 @@ export function useProductDetails(id: number) {
         const data = await productService.getProductById(id);
         return mapProductFromApi(data);
       } catch (error) {
-        console.error(`Error in useProductDetails for ID ${id}:`, error);
         // Return default product to avoid UI errors
         return {
           id: 0,
           name: 'Product Not Found',
           price: 0,
           category: '',
-          image: '/placeholder.svg',
+          image: '',
           description: 'This product could not be loaded.',
           colors: [],
           sizes: [],
@@ -106,9 +102,6 @@ export function useLogin() {
   return useMutation({
     mutationFn: (credentials: LoginCredentials) => authService.login(credentials),
     onError: (error: any) => {
-      // Log the error details for debugging
-      console.error('Login error:', error);
-      
       // Improve the error message if possible
       if (error.message === 'API Error: 401') {
         error.message = 'Invalid email or password. Please try again.';
@@ -131,9 +124,6 @@ export function useRegister() {
   return useMutation({
     mutationFn: (userData: RegisterData) => authService.register(userData),
     onError: (error: any) => {
-      // Log the error details for debugging
-      console.error('Registration error:', error);
-      
       // Improve the error message if possible
       if (error.message === 'API Error: 400') {
         error.message = 'Registration failed. This email or username might already be taken.';
@@ -209,7 +199,6 @@ export const useCart = () => {
         const cartResponse = await cartService.getCart();
         return mapCartItems(cartResponse);
       } catch (error) {
-        console.error('Error fetching cart:', error);
         // Return empty cart on error
         return [];
       }
@@ -230,9 +219,6 @@ export const useAddToCart = () => {
     onSuccess: () => {
       // Invalidate cart query to trigger a refetch
       queryClient.invalidateQueries({ queryKey: ['cart'] });
-    },
-    onError: (error) => {
-      console.error('Error adding to cart:', error);
     }
   });
 };
@@ -245,9 +231,6 @@ export const useUpdateCartItem = () => {
       cartService.updateCartItem(itemId, quantity),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
-    },
-    onError: (error) => {
-      console.error('Error updating cart item:', error);
     }
   });
 };
@@ -259,9 +242,6 @@ export const useRemoveFromCart = () => {
     mutationFn: (itemId: number) => cartService.removeFromCart(itemId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
-    },
-    onError: (error) => {
-      console.error('Error removing from cart:', error);
     }
   });
 };
@@ -273,9 +253,6 @@ export const useClearCart = () => {
     mutationFn: () => cartService.clearCart(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
-    },
-    onError: (error) => {
-      console.error('Error clearing cart:', error);
     }
   });
 };

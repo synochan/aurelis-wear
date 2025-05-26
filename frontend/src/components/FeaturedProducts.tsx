@@ -27,7 +27,6 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
         description: "Failed to load featured products.",
         variant: "destructive",
       });
-      console.error("Featured products error:", error);
     }
   }, [error, toast]);
 

@@ -46,11 +46,16 @@ const ProductDetail = () => {
   
   // Process image URL to ensure it works correctly
   const getImageUrl = (imageUrl: string) => {
-    if (!imageUrl) return "/placeholder.svg";
+    if (!imageUrl) return "";
     
     // If it's already an absolute URL (starts with http or https), use it as is
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
       return imageUrl;
+    }
+    
+    // If it's a Cloudinary ID, construct the URL
+    if (imageUrl.includes('image/upload/') || imageUrl.includes('products/')) {
+      return `https://res.cloudinary.com/dr5mrez5h/image/upload/${imageUrl}`;
     }
     
     // If it's a relative path without a leading slash, add one
@@ -91,18 +96,19 @@ const ProductDetail = () => {
   
   // 3. Images processing
   const processedImages = React.useMemo(() => {
-    if (!product) return ["/placeholder.svg"];
+    if (!product) return [];
     
     if (product.images && product.images.length > 0) {
       // Check if we have image objects with URLs
       if (typeof product.images[0] === 'object' && 'image' in product.images[0]) {
-        return product.images.map((img: any) => getImageUrl(img.image));
+        return product.images.map((img: any) => getImageUrl(img.image)).filter(Boolean);
       }
       // Direct image URLs
-      return (product.images as string[]).map(img => getImageUrl(img));
+      return (product.images as string[]).map(img => getImageUrl(img)).filter(Boolean);
     }
     
-    return [getImageUrl(product.image) || "/placeholder.svg"];
+    const mainImage = getImageUrl(product.image);
+    return mainImage ? [mainImage] : [];
   }, [product]);
   
   // 4. Price formatting
@@ -196,15 +202,17 @@ const ProductDetail = () => {
           {/* Product Images */}
           <div>
             <div className="mb-4 aspect-square bg-gray-100 rounded-lg overflow-hidden">
-              <img 
-                src={processedImages[activeImage]} 
-                alt={product.name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = "/placeholder.svg";
-                }}
-              />
+              {processedImages.length > 0 && (
+                <img 
+                  src={processedImages[activeImage]} 
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              )}
             </div>
             <div className="grid grid-cols-4 gap-2">
               {processedImages.map((image, i) => (
@@ -219,7 +227,7 @@ const ProductDetail = () => {
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = "/placeholder.svg";
+                      target.style.display = 'none';
                     }}
                   />
                 </div>

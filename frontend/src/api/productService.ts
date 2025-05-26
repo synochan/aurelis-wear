@@ -34,10 +34,10 @@ export const productService = {
         delete params.category__slug;
       }
       
-      const response = await apiClient.get('/products/', { params });
+      const response = await apiClient.get('/products', { params });
       return response.data.results || response.data;
     } catch (error) {
-      console.error('Error fetching products:', error);
+      // Silently handle errors
       return [];
     }
   },
@@ -45,10 +45,9 @@ export const productService = {
   // Get a single product by ID
   getProductById: async (id: number) => {
     try {
-      const response = await apiClient.get(`/products/${id}/`);
+      const response = await apiClient.get(`/products/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`Error fetching product with ID ${id}:`, error);
       throw error;
     }
   },
@@ -56,11 +55,12 @@ export const productService = {
   // Get featured products
   getFeaturedProducts: async () => {
     try {
-      // Try to get featured products using a query parameter instead of a dedicated endpoint
-      const response = await apiClient.get('/products/', { params: { is_featured: true } });
+      // Use products endpoint with is_featured filter
+      const response = await apiClient.get('/products', { 
+        params: { is_featured: true } 
+      });
       return response.data.results || response.data;
     } catch (error) {
-      console.error('Error fetching featured products:', error);
       return [];
     }
   }

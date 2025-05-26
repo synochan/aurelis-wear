@@ -2,49 +2,19 @@ import axios from 'axios';
 
 // Get the API URL with fallback
 const getApiUrl = () => {
-  try {
-    // First check for a specific environment variable
-    if (import.meta.env.VITE_API_URL) {
-      console.log('[client] Using configured API URL:', import.meta.env.VITE_API_URL);
-      return import.meta.env.VITE_API_URL;
-    }
-    
-    // In production, use the dedicated Render backend URL
-    if (import.meta.env.PROD && !window.location.hostname.includes('localhost')) {
-      // Use a direct, hardcoded URL to ensure we always hit the backend server
-      const backendUrl = 'https://aurelis-wear-api.onrender.com';
-      console.log('[client] Using hardcoded backend URL:', backendUrl);
-      return backendUrl;
-    }
-    
-    // Default to localhost
-    console.log('[client] Using localhost API URL');
-    return 'http://localhost:8000';
-  } catch (error) {
-    console.warn('Environment variables not available, using default API URL');
-    return 'http://localhost:8000';
+  // In production, use the dedicated Render backend URL
+  if (import.meta.env.PROD && !window.location.hostname.includes('localhost')) {
+    return 'https://aurelis-wear-api.onrender.com';
   }
+  
+  // Default to localhost for development
+  return 'http://localhost:8000';
 };
 
 // Calculate API base URL once
 const apiBaseUrl = getApiUrl();
-console.log('[client] API Base URL:', apiBaseUrl);
 
-// Helper to ensure all API paths have the /api prefix
-const ensureApiPath = (path: string) => {
-  // Remove any existing /api prefix to avoid duplication
-  let cleanPath = path;
-  if (path.startsWith('/api/')) {
-    cleanPath = path.substring(4); // Remove '/api'
-  } else if (path.startsWith('api/')) {
-    cleanPath = path.substring(3); // Remove 'api'
-  }
-  
-  // Now add the /api prefix
-  return `/api${cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`}`;
-};
-
-// Create axios instance
+// Create axios instance - DO NOT include /api in the baseURL
 export const apiClient = axios.create({
   baseURL: apiBaseUrl,
   headers: {
@@ -54,19 +24,29 @@ export const apiClient = axios.create({
   timeout: 10000, // 10 second timeout
 });
 
-// Add a request interceptor to attach auth token and ensure proper paths
+// Add a request interceptor to attach auth token and handle paths
 apiClient.interceptors.request.use(
   (config) => {
-    // Ensure path has /api prefix
+    // Handle API paths properly
     if (config.url) {
-      config.url = ensureApiPath(config.url);
+      // Strip any existing /api prefix first
+      let path = config.url;
+      if (path.startsWith('/api/')) {
+        path = path.substring(4);
+      } else if (path.startsWith('api/')) {
+        path = path.substring(3);
+      }
+      
+      // Ensure path starts with slash
+      if (!path.startsWith('/')) {
+        path = '/' + path;
+      }
+      
+      // Set the complete path with /api prefix
+      config.url = `/api${path}`;
     }
     
-    // Log requests in development
-    const fullUrl = `${config.baseURL}${config.url}`;
-    console.debug(`[client] API Request: ${config.method?.toUpperCase()} ${fullUrl}`, 
-      config.params || {}, config.data || {});
-    
+    // Attach auth token if available
     const token = localStorage.getItem('token');
     if (token) {
       config.headers['Authorization'] = `Token ${token}`;
@@ -75,7 +55,6 @@ apiClient.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error('[client] API request error:', error);
     return Promise.reject(error);
   }
 );
@@ -83,8 +62,6 @@ apiClient.interceptors.request.use(
 // Add a response interceptor for global error handling
 apiClient.interceptors.response.use(
   (response) => {
-    // Log successful responses in development
-    console.debug(`[client] API Response: ${response.status}`, response.data);
     return response;
   },
   (error) => {
@@ -92,17 +69,7 @@ apiClient.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       // Clear token on authentication errors
       localStorage.removeItem('token');
-      console.warn('[client] Authentication token expired or invalid');
-      // We could redirect to login here if needed
     }
-    
-    // Log all API errors
-    console.error('[client] API response error:', {
-      status: error.response?.status,
-      url: error.config?.url,
-      method: error.config?.method,
-      data: error.response?.data
-    });
     
     return Promise.reject(error);
   }
