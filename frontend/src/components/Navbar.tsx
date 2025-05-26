@@ -36,10 +36,9 @@ import { CommandDialog, CommandInput, CommandList, CommandItem, CommandEmpty } f
 import { api as apiClient } from '@/api';
 
 const categories = [
-  { name: "Men", subcategories: ["T-Shirts", "Hoodies", "Pants", "Shoes"] },
-  { name: "Women", subcategories: ["T-Shirts", "Hoodies", "Leggings", "Shoes"] },
-  { name: "Kids", subcategories: ["T-Shirts", "Hoodies", "Pants"] },
-  { name: "Accessories", subcategories: ["Caps", "Bags", "Socks"] },
+  { name: "Pants", slug: "pants" },
+  { name: "T-Shirt", slug: "t-shirt" },
+  { name: "Shoes", slug: "shoes" },
 ];
 
 const Navbar = () => {
@@ -100,27 +99,10 @@ const Navbar = () => {
                     <NavigationMenuTrigger>{category.name}</NavigationMenuTrigger>
                     <NavigationMenuContent>
                       <ul className="grid w-[400px] gap-3 p-4">
-                        {category.subcategories.map((subcategory) => (
-                          <li key={subcategory} className="row-span-1">
-                            <NavigationMenuLink asChild>
-                              <Link
-                                to={`/products?category=${category.name.toLowerCase()}&subcategory=${subcategory.toLowerCase()}`}
-                                className={cn(
-                                  "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                )}
-                              >
-                                <div className="text-sm font-medium leading-none">{subcategory}</div>
-                                <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                  Shop {subcategory} in {category.name}
-                                </p>
-                              </Link>
-                            </NavigationMenuLink>
-                          </li>
-                        ))}
                         <li className="row-span-1">
                           <NavigationMenuLink asChild>
                             <Link
-                              to={`/products?category=${category.name.toLowerCase()}`}
+                              to={`/products?category=${category.slug}`}
                               className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground font-medium"
                             >
                               View All {category.name}
@@ -222,18 +204,8 @@ const Navbar = () => {
               <div key={category.name} className="pb-3 border-b">
                 <h3 className="font-medium text-lg mb-2">{category.name}</h3>
                 <div className="ml-4 space-y-2">
-                  {category.subcategories.map((subcategory) => (
-                    <Link 
-                      key={subcategory} 
-                      to={`/products?category=${category.name.toLowerCase()}&subcategory=${subcategory.toLowerCase()}`}
-                      className="block py-1"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      {subcategory}
-                    </Link>
-                  ))}
-                  <Link 
-                    to={`/products?category=${category.name.toLowerCase()}`}
+                  <Link
+                    to={`/products?category=${category.slug}`}
                     className="block py-1 font-medium text-aurelis"
                     onClick={() => setIsOpen(false)}
                   >
