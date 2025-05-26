@@ -53,7 +53,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     
     // If it's a Cloudinary ID, construct the URL
     if (imageUrl.includes('image/upload/') || imageUrl.includes('products/')) {
-      return `https://res.cloudinary.com/aurelis/image/upload/${imageUrl}`;
+      return `https://res.cloudinary.com/dr5mrez5h/image/upload/${imageUrl}`;
     }
     
     // If it's a relative path without a leading slash, add one
