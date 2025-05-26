@@ -32,13 +32,16 @@ console.log('[client] API Base URL:', apiBaseUrl);
 
 // Helper to ensure all API paths have the /api prefix
 const ensureApiPath = (path: string) => {
-  // If the path already starts with /api, don't modify it
-  if (path.startsWith('/api/') || path.startsWith('api/')) {
-    return path.startsWith('/') ? path : `/${path}`;
+  // Remove any existing /api prefix to avoid duplication
+  let cleanPath = path;
+  if (path.startsWith('/api/')) {
+    cleanPath = path.substring(4); // Remove '/api'
+  } else if (path.startsWith('api/')) {
+    cleanPath = path.substring(3); // Remove 'api'
   }
   
-  // Otherwise, add the /api prefix
-  return `/api${path.startsWith('/') ? path : `/${path}`}`;
+  // Now add the /api prefix
+  return `/api${cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`}`;
 };
 
 // Create axios instance

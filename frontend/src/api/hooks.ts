@@ -46,11 +46,22 @@ export function useFeaturedProducts() {
     queryKey: queryKeys.products.featured,
     queryFn: async () => {
       try {
+        // First try with the filtered products approach
         const data = await productService.getFeaturedProducts();
         return Array.isArray(data) ? data.map(mapProductFromApi) : [];
       } catch (error) {
         console.error("Error in useFeaturedProducts:", error);
-        return [];
+        // If featured endpoint fails, fallback to getting all products
+        try {
+          const allProducts = await productService.getProducts();
+          // Just return the first 4 products as featured
+          return Array.isArray(allProducts) 
+            ? allProducts.slice(0, 4).map(mapProductFromApi) 
+            : [];
+        } catch (fallbackError) {
+          console.error("Fallback error in useFeaturedProducts:", fallbackError);
+          return [];
+        }
       }
     },
     staleTime: 60000, // 1 minute

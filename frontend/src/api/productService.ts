@@ -3,7 +3,7 @@ import { Product } from '@/components/ProductCard';
 
 // Helper function to process image URLs
 const processImageUrl = (imageUrl: string): string => {
-  if (!imageUrl) return "/placeholder.svg";
+  if (!imageUrl) return "";
   
   // If it's already an absolute URL (starts with http or https), use it as is
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
@@ -56,8 +56,8 @@ export const productService = {
   // Get featured products
   getFeaturedProducts: async () => {
     try {
-      // Since there's no dedicated featured endpoint, we'll use a parameter
-      const response = await apiClient.get('/products/featured/');
+      // Try to get featured products using a query parameter instead of a dedicated endpoint
+      const response = await apiClient.get('/products/', { params: { is_featured: true } });
       return response.data.results || response.data;
     } catch (error) {
       console.error('Error fetching featured products:', error);
@@ -109,7 +109,7 @@ export const mapProductFromApi = (apiProduct: ProductResponse): Product => {
       name: 'Product Not Found',
       price: 0,
       category: '',
-      image: '/placeholder.svg',
+      image: '',
       description: '',
       colors: [],
       sizes: [],
