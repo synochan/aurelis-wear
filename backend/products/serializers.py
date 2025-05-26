@@ -51,8 +51,7 @@ class SizeSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'size_type']
 
 class ProductListSerializer(serializers.ModelSerializer):
-    category_name = serializers.CharField(source='category.name')
-    category_slug = serializers.CharField(source='category.slug')
+    categories = CategorySerializer(many=True)
     image_url = serializers.SerializerMethodField()
     discount_price = serializers.SerializerMethodField()
     price_display = serializers.SerializerMethodField()
@@ -62,7 +61,7 @@ class ProductListSerializer(serializers.ModelSerializer):
         model = Product
         fields = [
             'id', 'name', 'price', 'price_display', 'discount_price', 'discount_price_display', 
-            'category_name', 'category_slug', 'image_url', 'is_new', 'is_featured', 
+            'categories', 'image_url', 'is_new', 'is_featured', 
             'discount_percentage', 'in_stock'
         ]
     
@@ -104,7 +103,7 @@ class ProductListSerializer(serializers.ModelSerializer):
         return None
 
 class ProductDetailSerializer(serializers.ModelSerializer):
-    category = CategorySerializer()
+    categories = CategorySerializer(many=True)
     images = ProductImageSerializer(many=True)
     colors = ColorSerializer(many=True)
     sizes = SizeSerializer(many=True)
@@ -116,7 +115,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         model = Product
         fields = [
             'id', 'name', 'price', 'price_display', 'discount_price', 'discount_price_display', 
-            'description', 'category', 'colors', 'sizes', 'images', 'is_new', 
+            'description', 'categories', 'colors', 'sizes', 'images', 'is_new', 
             'is_featured', 'discount_percentage', 'in_stock',
             'created_at', 'updated_at'
         ]
