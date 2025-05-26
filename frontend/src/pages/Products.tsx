@@ -83,12 +83,13 @@ const Products = () => {
     // Apply category filter (multi-category support)
     if (activeFilters["Category"] && activeFilters["Category"].length > 0) {
       filtered = filtered.filter(product => {
-        // If product.categories is an array of category names or slugs
-        if (Array.isArray(product.categories)) {
-          return product.categories.some(cat => activeFilters["Category"].includes(cat) || activeFilters["Category"].includes(cat.name) || activeFilters["Category"].includes(cat.slug));
+        if (product.categories && Array.isArray(product.categories)) {
+          return product.categories.some(cat => activeFilters["Category"].includes(cat.name));
+        } else if ((product as any).category) {
+          // fallback for legacy single category
+          return activeFilters["Category"].includes((product as any).category);
         }
-        // If product.category is a string (legacy)
-        return activeFilters["Category"].includes(product.category);
+        return false;
       });
     }
     // Apply sorting

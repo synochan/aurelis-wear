@@ -13,7 +13,7 @@ export interface Product {
   priceDisplay?: string;
   discountPrice?: number;
   discountPriceDisplay?: string;
-  category: string;
+  categories?: {id: number; name: string; slug: string}[];
   image: string;
   isNew?: boolean;
   discountPercentage?: number;

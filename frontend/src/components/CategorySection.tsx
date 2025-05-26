@@ -82,7 +82,7 @@ const CategorySection: React.FC = () => {
                 onError={() => handleImageError(index)}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6">
-                <h3 className="text-white text-xl md:text-2xl font-bold mb-3">{category.title}</h3>
+                <h3 className="text-white text-xl md:text-2xl font-bold mb-3 drop-shadow-lg">{category.title}</h3>
                 <Button 
                   asChild 
                   variant="secondary" 
