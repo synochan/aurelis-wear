@@ -177,52 +177,7 @@ const Products = () => {
           </div>
         </div>
         
-        {/* Filter Panel */}
-        {(filtersOpen || !isMobile) && (
-          <div className="bg-gray-50 rounded-md p-4 mb-8 animate-fadeIn">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-medium">Filters</h3>
-              {Object.keys(activeFilters).length > 0 && (
-                <Button variant="ghost" onClick={clearFilters} className="h-auto py-1 px-2 text-sm">
-                  Clear all
-                </Button>
-              )}
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {filters.map((filter) => (
-                <div key={filter.name}>
-                  <Accordion type="single" collapsible defaultValue={filter.name}>
-                    <AccordionItem value={filter.name} className="border-none">
-                      <AccordionTrigger className="py-2 font-medium">
-                        {filter.name}
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="space-y-2">
-                          {filter.options.map((option) => (
-                            <div key={option} className="flex items-center space-x-2">
-                              <Checkbox 
-                                id={`${filter.name}-${option}`} 
-                                checked={(activeFilters[filter.name] || []).includes(option)}
-                                onCheckedChange={() => toggleFilter(filter.name, option)}
-                              />
-                              <label 
-                                htmlFor={`${filter.name}-${option}`}
-                                className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                              >
-                                {option}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Filter Panel is hidden */}
         
         {/* Loading State */}
         {isLoading && (
