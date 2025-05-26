@@ -6,7 +6,7 @@ import { formatCurrency } from '@/utils/formatters';
 const processImageUrl = (imageUrl: string): string => {
   if (!imageUrl) return "";
   
-  // If it's already an absolute URL (starts with http or https), use it as is
+  // If it's already an absolute URL, return as is
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
     return imageUrl;
   }
@@ -15,13 +15,18 @@ const processImageUrl = (imageUrl: string): string => {
   if (imageUrl.startsWith('image/upload/')) {
     return `https://res.cloudinary.com/dr5mrez5h/${imageUrl}`;
   }
-
-  // If it's a Cloudinary ID or contains 'products/', construct the URL
+  
+  // If it starts with 'v' (Cloudinary versioned path), prepend the full Cloudinary URL
+  if (imageUrl.startsWith('v')) {
+    return `https://res.cloudinary.com/dr5mrez5h/image/upload/${imageUrl}`;
+  }
+  
+  // If it contains 'products/', assume it's a Cloudinary path and prepend as above
   if (imageUrl.includes('products/')) {
     return `https://res.cloudinary.com/dr5mrez5h/image/upload/${imageUrl}`;
   }
   
-  // If it's a relative path without a leading slash, add one
+  // Otherwise, treat as a relative path
   if (!imageUrl.startsWith('/')) {
     return `/${imageUrl}`;
   }

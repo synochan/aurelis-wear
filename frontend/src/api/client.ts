@@ -27,31 +27,23 @@ export const apiClient = axios.create({
 // Add a request interceptor to attach auth token and handle paths
 apiClient.interceptors.request.use(
   (config) => {
-    // Handle API paths properly
     if (config.url) {
-      // Strip any existing /api prefix first
       let path = config.url;
-      if (path.startsWith('/api/')) {
-        path = path.substring(4);
-      } else if (path.startsWith('api/')) {
-        path = path.substring(3);
+      // Only prepend /api if not already present
+      if (!path.startsWith('/api/')) {
+        // Ensure path starts with slash
+        if (!path.startsWith('/')) {
+          path = '/' + path;
+        }
+        path = '/api' + path;
       }
-      
-      // Ensure path starts with slash
-      if (!path.startsWith('/')) {
-        path = '/' + path;
-      }
-      
-      // Set the complete path with /api prefix
-      config.url = `/api${path}`;
+      config.url = path;
     }
-    
     // Attach auth token if available
     const token = localStorage.getItem('token');
     if (token) {
       config.headers['Authorization'] = `Token ${token}`;
     }
-    
     console.log(`Making request to: ${config.baseURL}${config.url}`, config.params);
     return config;
   },
