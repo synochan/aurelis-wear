@@ -79,13 +79,21 @@ const Products = () => {
   // Apply client-side sorting
   const sortedProducts = React.useMemo(() => {
     if (!products) return [];
-    
     let filtered = [...products];
-    
+    // Apply category filter (multi-category support)
+    if (activeFilters["Category"] && activeFilters["Category"].length > 0) {
+      filtered = filtered.filter(product => {
+        // If product.categories is an array of category names or slugs
+        if (Array.isArray(product.categories)) {
+          return product.categories.some(cat => activeFilters["Category"].includes(cat) || activeFilters["Category"].includes(cat.name) || activeFilters["Category"].includes(cat.slug));
+        }
+        // If product.category is a string (legacy)
+        return activeFilters["Category"].includes(product.category);
+      });
+    }
     // Apply sorting
     switch (sortBy) {
       case "newest":
-        // For demo purposes, we'll just randomize
         filtered = [...filtered].sort(() => Math.random() - 0.5);
         break;
       case "price-low":
@@ -103,12 +111,10 @@ const Products = () => {
         });
         break;
       default:
-        // Featured: keep default order
         break;
     }
-    
     return filtered;
-  }, [products, sortBy]);
+  }, [products, sortBy, activeFilters]);
 
   const toggleFilter = (filterName: string, value: string) => {
     setActiveFilters(prev => {
@@ -177,7 +183,51 @@ const Products = () => {
           </div>
         </div>
         
-        {/* Filter Panel is hidden */}
+        {/* Filter Panel */}
+        {(filtersOpen || !isMobile) && (
+          <div className="bg-gray-50 rounded-md p-4 mb-8 animate-fadeIn">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-medium">Filters</h3>
+              {Object.keys(activeFilters).length > 0 && (
+                <Button variant="ghost" onClick={clearFilters} className="h-auto py-1 px-2 text-sm">
+                  Clear all
+                </Button>
+              )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {filters.map((filter) => (
+                <div key={filter.name}>
+                  <Accordion type="single" collapsible defaultValue={filter.name}>
+                    <AccordionItem value={filter.name} className="border-none">
+                      <AccordionTrigger className="py-2 font-medium">
+                        {filter.name}
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-2">
+                          {filter.options.map((option) => (
+                            <div key={option} className="flex items-center space-x-2">
+                              <Checkbox 
+                                id={`${filter.name}-${option}`} 
+                                checked={(activeFilters[filter.name] || []).includes(option)}
+                                onCheckedChange={() => toggleFilter(filter.name, option)}
+                              />
+                              <label 
+                                htmlFor={`${filter.name}-${option}`}
+                                className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                              >
+                                {option}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         {/* Loading State */}
         {isLoading && (
