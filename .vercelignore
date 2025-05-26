@@ -1,37 +1,10 @@
-# Backend-related files (not needed for frontend deployment)
-backend/
-/api/
-__pycache__/
-*.py
-*.pyc
-*.pyo
-*.pyd
-db.sqlite3
-*.sqlite3
-venv/
-env/
-*.so
-.Python
-develop-eggs/
-eggs/
-.eggs/
-*.egg-info/
-*.egg
-.pytest_cache/
-
-# Git files
-.git/
-.gitignore
-
-# Dependencies (will be installed during build)
-# Don't ignore node_modules as Vercel needs to build them
-# node_modules/
-# frontend/node_modules/
-
-# Environment files (environment variables are set in Vercel dashboard)
+.git
+node_modules
 .env
-.env.*
-!.env.example
-
-# Don't ignore frontend directory! This is what we're deploying
-# frontend/ 
+.env.local
+.env.development
+.env.test
+.vscode
+README.md
+frontend/node_modules
+backend

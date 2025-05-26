@@ -30,7 +30,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
                         return obj.image
                     else:
                         # Assume it's a cloudinary public ID
-                        return f"https://res.cloudinary.com/aurelis/image/upload/{obj.image}"
+                        return f"https://res.cloudinary.com/dr5mrez5h/image/upload/{obj.image}"
         except Exception as e:
             print(f"Error getting image URL: {e}")
         return None
