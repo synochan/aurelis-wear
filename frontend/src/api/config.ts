@@ -24,12 +24,8 @@ const getBaseUrl = () => {
 // Helper to ensure all API paths have the /api prefix
 const ensureApiPath = (path: string) => {
   // If the path already starts with /api, don't modify it
-  if (path.startsWith('/api/') || path.startsWith('api/')) {
-    return path.startsWith('/') ? path : `/${path}`;
-  }
-  
-  // Otherwise, add the /api prefix
-  return `/api${path.startsWith('/') ? path : `/${path}`}`;
+  // (No longer needed: axios client handles /api prefixing robustly)
+  return path.startsWith('/') ? path : `/${path}`;
 };
 
 // Calculate the API base URL
