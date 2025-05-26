@@ -15,11 +15,6 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
-      input: {
-        main: path.resolve(__dirname, 'index.html'),
-        '404': path.resolve(__dirname, 'public/404.html'),
-        '200': path.resolve(__dirname, 'public/200.html'),
-      },
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
