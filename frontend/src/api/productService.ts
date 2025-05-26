@@ -55,13 +55,22 @@ export const productService = {
   // Get featured products
   getFeaturedProducts: async () => {
     try {
-      // Use products endpoint with is_featured filter
+      // First try with the is_featured filter
       const response = await apiClient.get('/products', { 
         params: { is_featured: true } 
       });
       return response.data.results || response.data;
     } catch (error) {
-      return [];
+      // If filtering by is_featured fails, try getting all products instead
+      try {
+        const allResponse = await apiClient.get('/products');
+        const allProducts = allResponse.data.results || allResponse.data;
+        // Return the first few products as "featured"
+        return Array.isArray(allProducts) ? allProducts.slice(0, 4) : [];
+      } catch (secondError) {
+        // If all fails, return empty array
+        return [];
+      }
     }
   }
 };

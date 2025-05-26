@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import ProductCard from './ProductCard';
 import FallbackProduct from './FallbackProduct';
 import { Button } from '@/components/ui/button';
-import { useFeaturedProducts } from '@/api';
+import { useFeaturedProducts, useProducts } from '@/api';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -16,20 +16,18 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
   title = "Featured Products", 
   subtitle = "Discover the best of our collection"
 }) => {
-  const { data: products = [], isLoading, error } = useFeaturedProducts();
+  // Try to get featured products first
+  const { data: featuredProducts = [], isLoading: isFeaturedLoading } = useFeaturedProducts();
+  
+  // As a fallback, get regular products
+  const { data: allProducts = [], isLoading: isAllLoading } = useProducts({ limit: '4' });
+  
+  // Combine data
+  const products = featuredProducts.length > 0 ? featuredProducts : allProducts;
+  const isLoading = isFeaturedLoading || isAllLoading;
+  
   const { toast } = useToast();
   
-  // Show error toast if query fails
-  React.useEffect(() => {
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load featured products.",
-        variant: "destructive",
-      });
-    }
-  }, [error, toast]);
-
   // Fallback for empty products
   const hasProducts = products && products.length > 0;
   const displayItems = hasProducts ? products : Array(4).fill(null);
@@ -69,4 +67,4 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
   );
 };
 
-export default FeaturedProducts; 
+export default FeaturedProducts;

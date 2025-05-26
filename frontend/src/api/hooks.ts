@@ -45,24 +45,16 @@ export function useFeaturedProducts() {
     queryKey: queryKeys.products.featured,
     queryFn: async () => {
       try {
-        // First try with the featured products approach
+        // Try to get featured products
         const data = await productService.getFeaturedProducts();
         return Array.isArray(data) ? data.map(mapProductFromApi) : [];
       } catch (error) {
-        // If featured endpoint fails, fallback to getting all products
-        try {
-          const allProducts = await productService.getProducts();
-          // Just return the first 4 products as featured
-          return Array.isArray(allProducts) 
-            ? allProducts.slice(0, 4).map(mapProductFromApi) 
-            : [];
-        } catch (fallbackError) {
-          return [];
-        }
+        // This will only happen if all fallbacks in productService fail
+        return [];
       }
     },
     staleTime: 60000, // 1 minute
-    retry: 1,
+    retry: 2, // Retry twice - the service already has internal retries
     refetchOnWindowFocus: false,
   });
 }
