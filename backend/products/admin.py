@@ -7,11 +7,15 @@ class ProductImageInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'price', 'category', 'is_new', 'is_featured', 'in_stock')
-    list_filter = ('category', 'is_new', 'is_featured', 'in_stock')
+    def category_list(self, obj):
+        return ", ".join([c.name for c in obj.categories.all()])
+    category_list.short_description = 'Categories'
+
+    list_display = ('name', 'price', 'category_list', 'is_new', 'is_featured', 'in_stock')
+    list_filter = ('categories', 'is_new', 'is_featured', 'in_stock')
     search_fields = ('name', 'description')
     inlines = [ProductImageInline]
-    filter_horizontal = ('colors', 'sizes')
+    filter_horizontal = ('colors', 'sizes', 'categories')
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
