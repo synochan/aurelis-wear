@@ -20,10 +20,13 @@ class OrderItemSerializer(serializers.ModelSerializer):
     
     def get_product_image(self, obj):
         primary_image = obj.product.images.filter(is_primary=True).first()
+        if not primary_image:
+            primary_image = obj.product.images.first()
         if primary_image:
             request = self.context.get('request')
             if request:
                 return request.build_absolute_uri(primary_image.image.url)
+            return primary_image.image.url
         return None
 
 class OrderSerializer(serializers.ModelSerializer):
