@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +29,8 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  
   // Ensure price is a number
   const numericPrice = typeof product.price === 'number' ? product.price : parseFloat(String(product.price)) || 0;
   
@@ -47,6 +49,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     }
   };
   
+  // Custom image error handler that updates state
+  const handleImageLoadError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    handleImageError(e);
+    setIsImageLoaded(true); // Still set as loaded to remove loading state
+  };
+  
   return (
     <Card className="border-none overflow-hidden group hover-scale">
       <Link to={`/product/${product.id}`} className="block">
@@ -54,10 +62,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <img 
             src={getBestProductImage(product)} 
             alt={product.name}
-            className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
-            onError={handleImageError}
+            className={`h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            onError={handleImageLoadError}
+            onLoad={() => setIsImageLoaded(true)}
             loading="lazy"
           />
+          
+          {/* Loading skeleton (shows until image loads) */}
+          {!isImageLoaded && (
+            <div className="absolute inset-0 bg-gray-100 animate-pulse"></div>
+          )}
           
           {/* Wishlist button */}
           <Button variant="ghost" size="icon" className="absolute top-2 right-2 bg-white/80 hover:bg-white rounded-full">

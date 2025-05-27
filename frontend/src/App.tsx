@@ -17,6 +17,7 @@ import Orders from "./pages/Orders";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import ImageDebugger from "./components/ImageDebugger";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => {
                   <Route path="/register" element={<Register />} />
                   <Route path="/account" element={<Account />} />
                   <Route path="/orders" element={<Orders />} />
+                  <Route path="/debug/images" element={<div className="container py-12"><ImageDebugger /></div>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>

@@ -1,0 +1,15 @@
+<svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="300" height="300" fill="#F5F5F7"/>
+  
+  <!-- Stylized product icon -->
+  <path d="M150 100C144.477 100 140 104.477 140 110V190C140 195.523 144.477 200 150 200H180C185.523 200 190 195.523 190 190V145L145 100H150Z" fill="#E0E0E4"/>
+  <path d="M145 100V140C145 142.761 147.239 145 150 145H190L145 100Z" fill="#D0D0D6"/>
+  
+  <!-- Simple decorative elements -->
+  <rect x="115" y="215" width="70" height="10" rx="2" fill="#E0E0E4"/>
+  <rect x="125" y="235" width="50" height="6" rx="2" fill="#E0E0E4"/>
+  
+  <!-- Brand logo placeholder -->
+  <circle cx="150" cy="70" r="20" fill="#E0E0E4"/>
+</svg> 

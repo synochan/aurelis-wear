@@ -121,8 +121,8 @@ export const mapProductFromApi = (apiProduct: ProductResponse): Product => {
     };
   }
   
-  // Process the main image
-  const mainImage = getImageUrl(apiProduct.image);
+  // Process the main image - use empty string instead of null/undefined
+  const mainImage = getImageUrl(apiProduct.image || '');
   
   // Process the array of images if present
   let processedStringImages: string[] = [];
@@ -132,8 +132,11 @@ export const mapProductFromApi = (apiProduct: ProductResponse): Product => {
     // Sort the images into appropriate arrays based on type
     apiProduct.images.forEach(img => {
       if (typeof img === 'string') {
-        processedStringImages.push(getImageUrl(img));
-      } else if (img && typeof img === 'object' && 'image' in img) {
+        // Filter out empty strings, null, or undefined images
+        if (img && img.trim() !== '') {
+          processedStringImages.push(getImageUrl(img));
+        }
+      } else if (img && typeof img === 'object' && 'image' in img && img.image) {
         processedObjectImages.push({
           ...img,
           image: getImageUrl(img.image)
@@ -147,7 +150,7 @@ export const mapProductFromApi = (apiProduct: ProductResponse): Product => {
     ? processedObjectImages 
     : processedStringImages.length > 0 
       ? processedStringImages 
-      : [mainImage];
+      : mainImage ? [mainImage] : [];
   
   // Use server-provided price displays if available, otherwise format locally
   const priceDisplay = apiProduct.price_display || formatCurrency(apiProduct.price);

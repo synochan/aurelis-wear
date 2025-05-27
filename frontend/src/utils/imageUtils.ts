@@ -4,7 +4,18 @@
 
 const CLOUDINARY_CLOUD_NAME = 'dr5mrez5h';
 const CLOUDINARY_BASE_URL = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload`;
-const DEFAULT_PLACEHOLDER = '/placeholder.svg';
+const DEFAULT_PLACEHOLDER = '/product-placeholder.svg';
+
+/**
+ * Debug function to log image URLs during development
+ * @param originalUrl - The original URL
+ * @param processedUrl - The processed URL
+ */
+const debugImageUrl = (originalUrl: string, processedUrl: string): void => {
+  if (process.env.NODE_ENV !== 'production') {
+    console.debug(`Image URL processing: ${originalUrl} → ${processedUrl}`);
+  }
+};
 
 /**
  * Get a properly formatted image URL based on various possible input formats
@@ -12,46 +23,66 @@ const DEFAULT_PLACEHOLDER = '/placeholder.svg';
  * @returns - A properly formatted URL that can be used in an img src attribute
  */
 export const getImageUrl = (imageUrl?: string): string => {
-  // Return placeholder if no image
-  if (!imageUrl) return DEFAULT_PLACEHOLDER;
+  // Return placeholder if no image or empty string
+  if (!imageUrl || imageUrl === '') {
+    return DEFAULT_PLACEHOLDER;
+  }
+  
+  // Remove potential whitespace
+  const trimmedUrl = imageUrl.trim();
+  
+  // Handle null, undefined, or "null" string values
+  if (!trimmedUrl || trimmedUrl === 'null' || trimmedUrl === 'undefined') {
+    return DEFAULT_PLACEHOLDER;
+  }
+  
+  let result: string;
   
   // URLs with protocol - already absolute
-  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-    return imageUrl;
+  if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
+    result = trimmedUrl;
   }
-  
   // Cloudinary full URL
-  if (imageUrl.includes('cloudinary.com')) {
-    return imageUrl;
+  else if (trimmedUrl.includes('cloudinary.com')) {
+    result = trimmedUrl;
   }
-  
-  // Cloudinary asset ID or path patterns
-  if (
-    imageUrl.includes('image/upload/') || 
-    imageUrl.includes('products/') || 
-    imageUrl.startsWith('v')
-  ) {
-    // Check if we need to add the full path or just the domain
-    if (imageUrl.startsWith('image/upload/')) {
-      return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/${imageUrl}`;
-    }
-    
-    return `${CLOUDINARY_BASE_URL}/${imageUrl}`;
+  // Cloudinary asset ID format: v1234567890/products/image.jpg
+  else if (trimmedUrl.match(/^v\d+\//) || trimmedUrl.includes('/products/')) {
+    result = `${CLOUDINARY_BASE_URL}/${trimmedUrl}`;
   }
-  
+  // Cloudinary path format: image/upload/v1234567890/products/image.jpg
+  else if (trimmedUrl.includes('image/upload/')) {
+    result = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/${trimmedUrl}`;
+  }
+  // Public ID only format (direct reference): products/image.jpg
+  else if (trimmedUrl.startsWith('products/')) {
+    result = `${CLOUDINARY_BASE_URL}/${trimmedUrl}`;
+  }
   // Django media paths
-  if (imageUrl.startsWith('/media/')) {
-    // TODO: If needed, construct an absolute URL based on API base URL
-    return imageUrl;
+  else if (trimmedUrl.startsWith('/media/')) {
+    result = trimmedUrl;
   }
-  
+  // Handle potential placeholder references
+  else if (
+    trimmedUrl.includes('placeholder') || 
+    trimmedUrl.includes('no-image') || 
+    trimmedUrl === 'null'
+  ) {
+    result = DEFAULT_PLACEHOLDER;
+  }
   // Relative path, ensure it has a leading slash
-  if (!imageUrl.startsWith('/')) {
-    return `/${imageUrl}`;
+  else if (!trimmedUrl.startsWith('/')) {
+    result = `/${trimmedUrl}`;
+  }
+  // Return as is for other cases
+  else {
+    result = trimmedUrl;
   }
   
-  // Return as is for other cases
-  return imageUrl;
+  // Log for debugging
+  debugImageUrl(trimmedUrl, result);
+  
+  return result;
 };
 
 /**
@@ -60,6 +91,8 @@ export const getImageUrl = (imageUrl?: string): string => {
  * @returns The best image URL to display
  */
 export const getBestProductImage = (product: any): string => {
+  if (!product) return DEFAULT_PLACEHOLDER;
+  
   // If we have an images array
   if (product.images && Array.isArray(product.images) && product.images.length > 0) {
     // Try to find a primary image first
@@ -80,8 +113,8 @@ export const getBestProductImage = (product: any): string => {
     }
   }
   
-  // Fallback to the main image
-  return getImageUrl(product.image);
+  // Fallback to the main image if available, otherwise use placeholder
+  return product.image ? getImageUrl(product.image) : DEFAULT_PLACEHOLDER;
 };
 
 /**
