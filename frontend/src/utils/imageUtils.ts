@@ -7,6 +7,26 @@ const CLOUDINARY_BASE_URL = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}
 const DEFAULT_PLACEHOLDER = '/product-placeholder.svg';
 
 /**
+ * Fix duplicate image/upload paths in Cloudinary URLs
+ * @param url - The URL to fix
+ * @returns - The fixed URL with only one image/upload segment
+ */
+const fixDuplicateImageUploadPaths = (url: string): string => {
+  // Early exit if no duplication
+  if (!url.includes('image/upload/image/upload/')) {
+    return url;
+  }
+
+  // Handle URLs with any number of duplicate image/upload segments
+  let fixedUrl = url;
+  while (fixedUrl.includes('image/upload/image/upload/')) {
+    fixedUrl = fixedUrl.replace('image/upload/image/upload/', 'image/upload/');
+  }
+  
+  return fixedUrl;
+};
+
+/**
  * Debug function to log image URLs during development
  * @param originalUrl - The original URL
  * @param processedUrl - The processed URL
@@ -38,24 +58,18 @@ export const getImageUrl = (imageUrl?: string): string => {
   
   let result: string;
   
-  // URLs with protocol - already absolute, check for duplicate paths
+  // URLs with protocol - already absolute
   if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
     // Fix duplicate image/upload paths in Cloudinary URLs
-    if (trimmedUrl.includes('cloudinary.com') && 
-        trimmedUrl.includes('image/upload/image/upload/')) {
-      result = trimmedUrl.replace('image/upload/image/upload/', 'image/upload/');
+    if (trimmedUrl.includes('cloudinary.com')) {
+      result = fixDuplicateImageUploadPaths(trimmedUrl);
     } else {
       result = trimmedUrl;
     }
   }
   // Cloudinary full URL
   else if (trimmedUrl.includes('cloudinary.com')) {
-    // Check for duplicate paths here too
-    if (trimmedUrl.includes('image/upload/image/upload/')) {
-      result = trimmedUrl.replace('image/upload/image/upload/', 'image/upload/');
-    } else {
-      result = trimmedUrl;
-    }
+    result = fixDuplicateImageUploadPaths(trimmedUrl);
   }
   // Cloudinary asset ID format: v1234567890/products/image.jpg
   else if (trimmedUrl.match(/^v\d+\//) || trimmedUrl.includes('/products/')) {
@@ -63,10 +77,8 @@ export const getImageUrl = (imageUrl?: string): string => {
   }
   // Cloudinary path format: image/upload/v1234567890/products/image.jpg
   else if (trimmedUrl.includes('image/upload/')) {
-    // Check for duplicate paths in the path-only format
-    const fixedPath = trimmedUrl.includes('image/upload/image/upload/') 
-      ? trimmedUrl.replace('image/upload/image/upload/', 'image/upload/') 
-      : trimmedUrl;
+    // Fix duplicate paths then build full URL
+    const fixedPath = fixDuplicateImageUploadPaths(trimmedUrl);
     result = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/${fixedPath}`;
   }
   // Public ID only format (direct reference): products/image.jpg
@@ -92,6 +104,11 @@ export const getImageUrl = (imageUrl?: string): string => {
   // Return as is for other cases
   else {
     result = trimmedUrl;
+  }
+  
+  // Apply final check for duplicate image/upload paths
+  if (result.includes('cloudinary.com') && result.includes('image/upload/')) {
+    result = fixDuplicateImageUploadPaths(result);
   }
   
   // Log for debugging
