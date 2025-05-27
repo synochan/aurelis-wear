@@ -18,8 +18,6 @@ import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ImageDebugger from "./components/ImageDebugger";
-import ImageDebugConsole from "./components/ImageDebugConsole";
-import DirectImageTest from "./components/DirectImageTest";
 
 const queryClient = new QueryClient();
 
@@ -47,13 +45,12 @@ const App = () => {
                   <Route path="/account" element={<Account />} />
                   <Route path="/orders" element={<Orders />} />
                   <Route path="/debug/images" element={<div className="container py-12"><ImageDebugger /></div>} />
-                  <Route path="/debug/image-test" element={<DirectImageTest />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
               <Footer />
               {/* Debug Tools - Only visible in development */}
-              {process.env.NODE_ENV !== 'production' && <ImageDebugConsole />}
+              {/* {process.env.NODE_ENV !== 'production' && <ImageDebugConsole />} */}
             </div>
           </CartProvider>
         </BrowserRouter>
