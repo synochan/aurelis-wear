@@ -1,17 +1,27 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, ChevronRight, ShoppingBag } from 'lucide-react';
-import { useCurrentUser, useOrders } from '@/api';
+import { useCurrentUser, useOrders, authService } from '@/api';
 import { toast } from '@/components/ui/use-toast';
 import { formatCurrency } from '@/utils/formatters';
 
 const Orders = () => {
   const navigate = useNavigate();
+  const isAuthenticated = authService.isAuthenticated();
   const { data: user, isLoading: userLoading } = useCurrentUser();
   const { data: orders = [], isLoading: ordersLoading, error } = useOrders();
+
+  // Debug information
+  useEffect(() => {
+    console.log("Auth status:", isAuthenticated);
+    console.log("Current user:", user);
+    console.log("Orders data:", orders);
+    console.log("Orders loading:", ordersLoading);
+    console.log("Orders error:", error);
+  }, [isAuthenticated, user, orders, ordersLoading, error]);
 
   // Handle errors
   if (error) {
