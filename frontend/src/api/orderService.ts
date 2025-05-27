@@ -1,4 +1,5 @@
 import api from './config';
+import { authService } from './authService';
 
 // Define types
 export interface OrderItem {
@@ -40,27 +41,63 @@ interface PaginatedResponse<T> {
   results: T[];
 }
 
+/**
+ * Fetches all orders for the current user, handling pagination if needed
+ */
 const getOrders = async (): Promise<Order[]> => {
-  console.log('Fetching orders...');
+  console.log('Fetching orders for current user...');
+  
+  // Make sure we're authenticated
+  if (!authService.isAuthenticated()) {
+    console.warn('Not authenticated, cannot fetch orders');
+    return [];
+  }
+  
   try {
-    // Don't add /api/ prefix - it's already added by the API client
-    const response = await api.get('/orders/');
-    console.log('Orders API response:', response.data);
+    // Fetch all pages of orders
+    let allOrders: Order[] = [];
+    let nextPageUrl: string | null = '/orders/'; // Initial URL
     
-    // Handle paginated response
-    if (response.data && response.data.results && Array.isArray(response.data.results)) {
-      console.log(`Found ${response.data.results.length} orders in paginated response`);
-      return response.data.results;
-    } 
-    
-    // Handle direct array response (fallback)
-    if (Array.isArray(response.data)) {
-      console.log(`Found ${response.data.length} orders in array response`);
-      return response.data;
+    // Keep fetching pages until there are no more
+    while (nextPageUrl) {
+      console.log(`Fetching orders page: ${nextPageUrl}`);
+      
+      // Make the API request
+      const response = await api.get(nextPageUrl);
+      console.log('Orders API response:', response.data);
+      
+      // Handle paginated response
+      if (response.data && response.data.results && Array.isArray(response.data.results)) {
+        // Add this page's results to our collection
+        allOrders = [...allOrders, ...response.data.results];
+        console.log(`Added ${response.data.results.length} orders from page`);
+        
+        // Set up next page URL if available
+        nextPageUrl = response.data.next;
+        
+        // If the next URL is a full URL, extract just the path
+        if (nextPageUrl && (nextPageUrl.startsWith('http://') || nextPageUrl.startsWith('https://'))) {
+          try {
+            const url = new URL(nextPageUrl);
+            nextPageUrl = url.pathname + url.search;
+          } catch (e) {
+            console.error('Error parsing next page URL:', e);
+            nextPageUrl = null;
+          }
+        }
+      } else if (Array.isArray(response.data)) {
+        // Handle direct array response (fallback)
+        allOrders = [...allOrders, ...response.data];
+        console.log(`Added ${response.data.length} orders from non-paginated response`);
+        nextPageUrl = null; // No more pages
+      } else {
+        console.warn('Orders API returned unexpected data format:', response.data);
+        nextPageUrl = null; // Stop trying
+      }
     }
     
-    console.warn('Orders API returned unexpected data format:', response.data);
-    return [];
+    console.log(`Total orders fetched: ${allOrders.length}`);
+    return allOrders;
   } catch (error: any) {
     console.error('Error fetching orders:', error);
     console.error('Error details:', error.response?.data || error.message);
@@ -71,6 +108,12 @@ const getOrders = async (): Promise<Order[]> => {
 
 const getOrderById = async (orderId: number): Promise<Order> => {
   console.log(`Fetching order #${orderId}...`);
+  
+  // Make sure we're authenticated
+  if (!authService.isAuthenticated()) {
+    throw new Error('Not authenticated, cannot fetch order details');
+  }
+  
   try {
     // Don't add /api/ prefix - it's already added by the API client
     const response = await api.get(`/orders/${orderId}/`);
