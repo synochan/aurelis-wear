@@ -84,6 +84,9 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // Add explicit configuration for redirects
+  maxRedirects: 5,
+  withCredentials: true, // Important for CORS with credentials
 });
 
 // Add request interceptor for authentication
@@ -91,7 +94,14 @@ api.interceptors.request.use(
   (config) => {
     // Ensure path has /api prefix
     if (config.url) {
-      config.url = ensureApiPath(config.url);
+      let url = ensureApiPath(config.url);
+      
+      // Ensure trailing slash for API paths to avoid redirects
+      if (!url.endsWith('/') && !url.includes('?')) {
+        url = `${url}/`;
+      }
+      
+      config.url = url;
     }
     
     const token = localStorage.getItem('token');

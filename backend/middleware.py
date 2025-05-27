@@ -117,6 +117,7 @@ class CORSMiddleware(MiddlewareMixin):
             # Important when using specific origins
             response['Vary'] = 'Origin'
         else:
+            # For development, we allow all origins
             response['Access-Control-Allow-Origin'] = '*'
             
         # Set other CORS headers
@@ -124,9 +125,11 @@ class CORSMiddleware(MiddlewareMixin):
         response['Access-Control-Allow-Headers'] = (
             'Content-Type, Authorization, X-Requested-With, Accept, '
             'X-CSRF-Token, Accept-Version, Content-Length, Content-MD5, '
-            'Date, X-Api-Version'
+            'Date, X-Api-Version, Origin, DNT, User-Agent, If-Modified-Since, '
+            'Cache-Control, Pragma, Referer'
         )
         response['Access-Control-Allow-Credentials'] = 'true'
+        response['Access-Control-Expose-Headers'] = 'Content-Length, Content-Type'
         
         # Only add this for preflight requests
         if request.method == 'OPTIONS':
