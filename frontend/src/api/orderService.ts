@@ -35,8 +35,8 @@ export interface Order {
 const getOrders = async (): Promise<Order[]> => {
   console.log('Fetching orders...');
   try {
-    // Make sure we're using the correct URL format
-    const response = await api.get('/api/orders/');
+    // Don't add /api/ prefix - it's already added by the API client
+    const response = await api.get('/orders/');
     console.log('Orders API response:', response.data);
     
     if (!response.data || !Array.isArray(response.data)) {
@@ -56,7 +56,8 @@ const getOrders = async (): Promise<Order[]> => {
 const getOrderById = async (orderId: number): Promise<Order> => {
   console.log(`Fetching order #${orderId}...`);
   try {
-    const response = await api.get(`/api/orders/${orderId}/`);
+    // Don't add /api/ prefix - it's already added by the API client
+    const response = await api.get(`/orders/${orderId}/`);
     console.log(`Order #${orderId} API response:`, response.data);
     return response.data;
   } catch (error: any) {
@@ -66,66 +67,9 @@ const getOrderById = async (orderId: number): Promise<Order> => {
   }
 };
 
-// Add mock data for testing if needed
-const mockOrders: Order[] = [
-  {
-    id: 1,
-    status: 'delivered',
-    payment_method: 'credit_card',
-    payment_status: true,
-    shipping_address: '123 Test St',
-    shipping_price: 10,
-    total_price: 100,
-    created_at: '2023-05-15T14:30:00Z',
-    updated_at: '2023-05-15T14:30:00Z',
-    items: [
-      {
-        id: 1,
-        product_name: 'Test Product',
-        product: 1,
-        color: {
-          id: 1,
-          name: 'Black',
-          hex_value: '#000000',
-        },
-        size: {
-          id: 1,
-          name: 'M',
-        },
-        quantity: 1,
-        price: 90,
-      },
-    ],
-  },
-];
-
 export const orderService = {
-  // Use real API endpoints first, fall back to mock data if they fail
-  getOrders: async () => {
-    try {
-      // Try the real API first
-      const realOrders = await getOrders();
-      if (realOrders && realOrders.length > 0) {
-        return realOrders;
-      }
-      // Fall back to mock data if no real orders
-      console.log('No orders from API, using mock data');
-      return mockOrders;
-    } catch (error) {
-      console.log('Error in orders, using mock data');
-      return mockOrders;
-    }
-  },
-  getOrderById: async (id: number) => {
-    try {
-      // Try the real API first
-      return await getOrderById(id);
-    } catch (error) {
-      // Fall back to mock data
-      console.log(`Error fetching order #${id}, using mock data`);
-      return mockOrders[0];
-    }
-  },
+  getOrders,
+  getOrderById,
 };
 
 export default orderService; 
