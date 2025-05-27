@@ -56,40 +56,41 @@ export const getImageUrl = (imageUrl?: string): string => {
     return DEFAULT_PLACEHOLDER;
   }
   
+  // Log the original URL for debugging
+  console.log('Original image URL:', trimmedUrl);
+  
   let result: string;
   
-  // URLs with protocol - already absolute
-  if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
-    // Fix duplicate image/upload paths in Cloudinary URLs
-    if (trimmedUrl.includes('cloudinary.com')) {
-      result = fixDuplicateImageUploadPaths(trimmedUrl);
-    } else {
-      result = trimmedUrl;
-    }
-  }
-  // Cloudinary full URL
-  else if (trimmedUrl.includes('cloudinary.com')) {
+  // Case 1: Complete Cloudinary URL with potential duplicates
+  if (trimmedUrl.includes('cloudinary.com')) {
     result = fixDuplicateImageUploadPaths(trimmedUrl);
   }
-  // Cloudinary asset ID format: v1234567890/products/image.jpg
-  else if (trimmedUrl.match(/^v\d+\//) || trimmedUrl.includes('/products/')) {
+  // Case 2: URLs with http/https protocol but not Cloudinary 
+  else if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
+    result = trimmedUrl;
+  }
+  // Case 3: Just the version and path without cloud name - v1234567890/products/image.jpg
+  else if (trimmedUrl.match(/^v\d+\/products\//)) {
     result = `${CLOUDINARY_BASE_URL}/${trimmedUrl}`;
   }
-  // Cloudinary path format: image/upload/v1234567890/products/image.jpg
+  // Case 4: Just the product ID - products/image.jpg
+  else if (trimmedUrl.startsWith('products/')) {
+    result = `${CLOUDINARY_BASE_URL}/${trimmedUrl}`;
+  } 
+  // Case 5: Partial Cloudinary URL - image/upload/v1234567890/products/image.jpg
   else if (trimmedUrl.includes('image/upload/')) {
-    // Fix duplicate paths then build full URL
     const fixedPath = fixDuplicateImageUploadPaths(trimmedUrl);
     result = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/${fixedPath}`;
   }
-  // Public ID only format (direct reference): products/image.jpg
-  else if (trimmedUrl.startsWith('products/')) {
-    result = `${CLOUDINARY_BASE_URL}/${trimmedUrl}`;
+  // Case 6: Just the filename in products folder - image.jpg
+  else if (trimmedUrl.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) {
+    result = `${CLOUDINARY_BASE_URL}/products/${trimmedUrl}`;
   }
-  // Django media paths
+  // Case 7: Django media paths
   else if (trimmedUrl.startsWith('/media/')) {
     result = trimmedUrl;
   }
-  // Handle potential placeholder references
+  // Case 8: Placeholder references
   else if (
     trimmedUrl.includes('placeholder') || 
     trimmedUrl.includes('no-image') || 
@@ -97,11 +98,11 @@ export const getImageUrl = (imageUrl?: string): string => {
   ) {
     result = DEFAULT_PLACEHOLDER;
   }
-  // Relative path, ensure it has a leading slash
+  // Case 9: Relative path, ensure it has a leading slash
   else if (!trimmedUrl.startsWith('/')) {
     result = `/${trimmedUrl}`;
   }
-  // Return as is for other cases
+  // Default: Return as is for other cases
   else {
     result = trimmedUrl;
   }
@@ -111,8 +112,8 @@ export const getImageUrl = (imageUrl?: string): string => {
     result = fixDuplicateImageUploadPaths(result);
   }
   
-  // Log for debugging
-  debugImageUrl(trimmedUrl, result);
+  // Log the result for debugging
+  console.log('Processed image URL:', result);
   
   return result;
 };
@@ -125,28 +126,41 @@ export const getImageUrl = (imageUrl?: string): string => {
 export const getBestProductImage = (product: any): string => {
   if (!product) return DEFAULT_PLACEHOLDER;
   
+  console.log('Product for image selection:', product.id, product.name);
+  
   // If we have an images array
   if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+    console.log(`Product ${product.id} has ${product.images.length} images`);
+    
     // Try to find a primary image first
     const primaryImage = product.images.find((img: any) => 
       typeof img === 'object' && 'is_primary' in img && img.is_primary
     );
     
     if (primaryImage && typeof primaryImage === 'object' && 'image' in primaryImage) {
+      console.log(`Using primary image for product ${product.id}`);
       return getImageUrl(primaryImage.image);
     }
     
     // If no primary image, use the first image
     const firstImage = product.images[0];
     if (typeof firstImage === 'string') {
+      console.log(`Using first string image for product ${product.id}`);
       return getImageUrl(firstImage);
     } else if (typeof firstImage === 'object' && 'image' in firstImage) {
+      console.log(`Using first object image for product ${product.id}`);
       return getImageUrl(firstImage.image);
     }
   }
   
-  // Fallback to the main image if available, otherwise use placeholder
-  return product.image ? getImageUrl(product.image) : DEFAULT_PLACEHOLDER;
+  // Fallback to the main image if available
+  if (product.image) {
+    console.log(`Using main image for product ${product.id}`);
+    return getImageUrl(product.image);
+  }
+  
+  console.log(`No valid image found for product ${product.id}, using placeholder`);
+  return DEFAULT_PLACEHOLDER;
 };
 
 /**
