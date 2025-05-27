@@ -16,11 +16,12 @@ export interface Product {
   discountPriceDisplay?: string;
   categories?: {id: number; name: string; slug: string}[];
   image: string;
+  image_url?: string;
   isNew?: boolean;
   discountPercentage?: number;
   colors?: string[] | {id: number; name: string; hex_value: string}[];
   sizes?: {id: number; name: string; size_type?: string}[];
-  images?: {id: number; image: string; is_primary: boolean}[] | string[];
+  images?: {id: number; image: string; image_url?: string; is_primary: boolean}[] | string[];
   description?: string;
 }
 

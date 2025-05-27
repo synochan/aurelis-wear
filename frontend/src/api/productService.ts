@@ -85,6 +85,7 @@ interface ProductSize {
 interface ProductImage {
   id: number;
   image: string;
+  image_url?: string;
   is_primary: boolean;
 }
 
@@ -97,6 +98,7 @@ export interface ProductResponse {
   discount_price_display?: string;
   categories?: {id: number; name: string; slug: string}[];
   image: string;
+  image_url?: string;
   description?: string;
   isNew?: boolean;
   discountPercentage?: number;
@@ -124,38 +126,34 @@ export const mapProductFromApi = (apiProduct: ProductResponse): Product => {
     };
   }
   
-  // Process the main image - use empty string instead of null/undefined
-  const mainImage = getImageUrl(apiProduct.image || '');
+  // Prefer image_url if present
+  const mainImage = getImageUrl(apiProduct.image_url || apiProduct.image || '');
   
-  // Process the array of images if present
+  // Process the array of images if present, prefer image_url on each
   let processedStringImages: string[] = [];
   let processedObjectImages: ProductImage[] = [];
   
   if (apiProduct.images?.length) {
-    // Sort the images into appropriate arrays based on type
     apiProduct.images.forEach(img => {
       if (typeof img === 'string') {
-        // Filter out empty strings, null, or undefined images
         if (img && img.trim() !== '') {
           processedStringImages.push(getImageUrl(img));
         }
-      } else if (img && typeof img === 'object' && 'image' in img && img.image) {
+      } else if (img && typeof img === 'object') {
         processedObjectImages.push({
           ...img,
-          image: getImageUrl(img.image)
+          image: getImageUrl(img.image_url || img.image)
         });
       }
     });
   }
   
-  // Determine which array to use based on what we have
   const finalImages = processedObjectImages.length > 0 
     ? processedObjectImages 
     : processedStringImages.length > 0 
       ? processedStringImages 
       : mainImage ? [mainImage] : [];
   
-  // Use server-provided price displays if available, otherwise format locally
   const priceDisplay = apiProduct.price_display || formatCurrency(apiProduct.price);
   const discountPriceDisplay = apiProduct.discount_price_display || 
     (apiProduct.discount_price ? formatCurrency(apiProduct.discount_price) : undefined);

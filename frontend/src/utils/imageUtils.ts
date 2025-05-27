@@ -137,9 +137,9 @@ export const getBestProductImage = (product: any): string => {
       typeof img === 'object' && 'is_primary' in img && img.is_primary
     );
     
-    if (primaryImage && typeof primaryImage === 'object' && 'image' in primaryImage) {
-      console.log(`Using primary image for product ${product.id}`);
-      return getImageUrl(primaryImage.image);
+    if (primaryImage && typeof primaryImage === 'object') {
+      // Prefer image_url if present
+      return getImageUrl(primaryImage.image_url || primaryImage.image);
     }
     
     // If no primary image, use the first image
@@ -147,13 +147,16 @@ export const getBestProductImage = (product: any): string => {
     if (typeof firstImage === 'string') {
       console.log(`Using first string image for product ${product.id}`);
       return getImageUrl(firstImage);
-    } else if (typeof firstImage === 'object' && 'image' in firstImage) {
-      console.log(`Using first object image for product ${product.id}`);
-      return getImageUrl(firstImage.image);
+    } else if (typeof firstImage === 'object') {
+      // Prefer image_url if present
+      return getImageUrl(firstImage.image_url || firstImage.image);
     }
   }
   
   // Fallback to the main image if available
+  if (product.image_url) {
+    return getImageUrl(product.image_url);
+  }
   if (product.image) {
     console.log(`Using main image for product ${product.id}`);
     return getImageUrl(product.image);

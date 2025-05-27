@@ -80,14 +80,15 @@ const ProductDetail = () => {
     
     if (product.images && product.images.length > 0) {
       // Check if we have image objects with URLs
-      if (typeof product.images[0] === 'object' && 'image' in product.images[0]) {
-        return product.images.map((img: any) => getImageUrl(img.image)).filter(Boolean);
+      if (typeof product.images[0] === 'object' && ('image_url' in product.images[0] || 'image' in product.images[0])) {
+        return product.images.map((img: any) => getImageUrl(img.image_url || img.image)).filter(Boolean);
       }
       // Direct image URLs
       return (product.images as string[]).map(img => getImageUrl(img)).filter(Boolean);
     }
     
-    const mainImage = getImageUrl(product.image);
+    // Prefer image_url for main image
+    const mainImage = getImageUrl(product.image_url || product.image);
     return mainImage ? [mainImage] : [];
   }, [product]);
   
