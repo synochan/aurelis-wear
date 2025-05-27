@@ -29,6 +29,7 @@ export const productService = {
       
       return data;
     } catch (error) {
+      console.error('Error fetching products:', error);
       throw error;
     }
   },
@@ -42,6 +43,7 @@ export const productService = {
       }
       return response.data;
     } catch (error) {
+      console.error(`Error fetching product #${id}:`, error);
       throw error;
     }
   },
@@ -61,6 +63,7 @@ export const productService = {
       
       return data;
     } catch (error) {
+      console.error('Error fetching featured products:', error);
       throw error;
     }
   }

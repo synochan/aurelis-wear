@@ -67,4 +67,17 @@ apiClient.interceptors.response.use(
     console.error('API Error:', error.message, error.config?.url, error.response?.status);
     return Promise.reject(error);
   }
-); 
+);
+
+// Function to check API health
+export const checkApiHealth = async (): Promise<boolean> => {
+  try {
+    // Try to fetch a lightweight endpoint
+    await apiClient.get('/health-check');
+    
+    return true;
+  } catch (error) {
+    console.error('API health check failed:', error);
+    return false;
+  }
+}; 

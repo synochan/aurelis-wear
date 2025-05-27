@@ -26,7 +26,7 @@ const ImageDebugger: React.FC = () => {
     const fetchProducts = async () => {
       try {
         setIsLoading(true);
-        const data = await productService.getProducts();
+        const data = await productService.getProducts({ limit: '5' });
         console.log('Fetched products:', data);
         setProducts(data.slice(0, 5)); // Just take the first 5 for simplicity
       } catch (error) {
