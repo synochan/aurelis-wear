@@ -38,8 +38,6 @@ export interface CartResponse {
 
 // Error handling helper
 const handleApiError = (error: any): never => {
-  console.error('Cart API error:', error);
-  
   // Check for network errors
   if (error.message === 'Network Error') {
     throw new Error('Network error. Please check your connection.');
@@ -57,12 +55,6 @@ const handleApiError = (error: any): never => {
     || error.message 
     || 'An unexpected error occurred';
     
-  console.error('Cart API error details:', {
-    status: error.response?.status,
-    message: errorMessage,
-    data: error.response?.data
-  });
-  
   throw new Error(errorMessage);
 };
 
@@ -81,7 +73,6 @@ export const cartService = {
   // Add item to cart
   async addToCart(item: AddToCartItem): Promise<CartResponse> {
     try {
-      console.log('Adding to cart:', item);
       const response = await apiClient.post('/cart/items/', item);
       return response.data;
     } catch (error) {
@@ -92,7 +83,6 @@ export const cartService = {
   // Update cart item quantity
   async updateCartItem(itemId: number, quantity: number): Promise<CartResponse> {
     try {
-      console.log(`Updating cart item ${itemId} to quantity ${quantity}`);
       const response = await apiClient.patch(`/cart/items/${itemId}/`, {
         quantity
       });
@@ -105,7 +95,6 @@ export const cartService = {
   // Remove item from cart
   async removeFromCart(itemId: number): Promise<CartResponse> {
     try {
-      console.log(`Removing cart item ${itemId}`);
       const response = await apiClient.delete(`/cart/items/${itemId}/`);
       return response.data;
     } catch (error) {
@@ -116,7 +105,6 @@ export const cartService = {
   // Clear entire cart
   async clearCart(): Promise<CartResponse> {
     try {
-      console.log('Clearing cart');
       const response = await apiClient.post('/cart/clear/');
       return response.data;
     } catch (error) {

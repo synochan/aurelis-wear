@@ -45,8 +45,6 @@ const Register = () => {
     // Clear any previous error
     setServerError(null);
     
-    console.log(`Registering with email: ${data.email} (username will be ${data.email.split('@')[0]})`);
-    
     register(
       {
         firstName: data.firstName,
@@ -63,7 +61,6 @@ const Register = () => {
           navigate('/'); // Redirect to home page after registration
         },
         onError: (error: any) => {
-          console.error('Registration error:', error);
           setServerError(error.message || 'Failed to create account. Please try again.');
           toast({
             title: 'Error',

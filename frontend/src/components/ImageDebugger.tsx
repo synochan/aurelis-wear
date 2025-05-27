@@ -27,10 +27,8 @@ const ImageDebugger: React.FC = () => {
       try {
         setIsLoading(true);
         const data = await productService.getProducts({ limit: '5' });
-        console.log('Fetched products:', data);
         setProducts(data.slice(0, 5)); // Just take the first 5 for simplicity
       } catch (error) {
-        console.error('Error fetching products:', error);
         setErrorMessage('Failed to fetch test products');
       } finally {
         setIsLoading(false);

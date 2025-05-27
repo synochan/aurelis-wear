@@ -15,15 +15,6 @@ const Orders = () => {
   const { data: user, isLoading: userLoading } = useCurrentUser();
   const { data: orders = [], isLoading: ordersLoading, error } = useOrders();
 
-  // Debug information
-  useEffect(() => {
-    console.log("Auth status:", isAuthenticated);
-    console.log("Current user:", user);
-    console.log("Orders data:", orders);
-    console.log("Orders loading:", ordersLoading);
-    console.log("Orders error:", error);
-  }, [isAuthenticated, user, orders, ordersLoading, error]);
-
   // Handle errors
   if (error) {
     toast({
@@ -77,8 +68,6 @@ const Orders = () => {
       return `${months} ${months === 1 ? 'month' : 'months'} ago`;
     }
   };
-
-
 
   if (userLoading || ordersLoading) {
     return (

@@ -4,7 +4,6 @@ import axios from 'axios';
 const getBaseUrl = () => {
   // First check for a specific environment variable
   if (import.meta.env.VITE_API_URL) {
-    console.log('[config] Using configured API URL:', import.meta.env.VITE_API_URL);
     return import.meta.env.VITE_API_URL;
   }
   
@@ -12,12 +11,10 @@ const getBaseUrl = () => {
   if (import.meta.env.PROD && !window.location.hostname.includes('localhost')) {
     // Use the Render backend URL
     const backendUrl = 'https://aurelis-wear-api.onrender.com';
-    console.log('[config] Using Render backend URL:', backendUrl);
     return backendUrl;
   }
   
   // Default to localhost for any other case
-  console.log('[config] Using localhost API URL');
   return 'http://localhost:8000';
 };
 
@@ -30,7 +27,6 @@ const ensureApiPath = (path: string) => {
 
 // Calculate the API base URL
 const apiBaseUrl = getBaseUrl();
-console.log('[config] API Base URL:', apiBaseUrl);
 
 // Create base config for API calls
 export const apiConfig = {
@@ -109,9 +105,6 @@ api.interceptors.request.use(
       config.headers['Authorization'] = `Token ${token}`;
     }
     
-    // Debug logging
-    const fullUrl = `${config.baseURL}${config.url}`;
-    console.log(`[config] Request: ${config.method?.toUpperCase()} ${fullUrl}`, config.data);
     return config;
   },
   (error) => Promise.reject(error)
@@ -120,7 +113,6 @@ api.interceptors.request.use(
 // Add response interceptor for error handling
 api.interceptors.response.use(
   (response) => {
-    console.log(`[config] Response from ${response.config.url}:`, response.status);
     return response;
   },
   (error) => {
@@ -130,16 +122,6 @@ api.interceptors.response.use(
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
-    }
-    
-    // Error logging
-    if (error.response) {
-      console.error(`[config] Error ${error.response.status} from ${error.config.url}:`, 
-                   error.response.data);
-    } else if (error.request) {
-      console.error('[config] No response received:', error.request);
-    } else {
-      console.error('[config] Request failed:', error.message);
     }
     
     return Promise.reject(error);

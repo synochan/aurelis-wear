@@ -185,7 +185,6 @@ const ProductDetail = () => {
       quantity,
       name: product.name // Optional, for display purposes
     };
-    console.log("[AddToCart] Payload:", payload);
     addToCart(payload);
   };
   

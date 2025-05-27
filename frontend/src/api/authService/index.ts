@@ -67,12 +67,9 @@ export const authService = {
     // Login user
     login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
       try {
-        console.log('[auth] Attempting to login with:', credentials.email);
-        
         // Use direct axios call with full URL
         const loginPath = ensureApiPath('/auth/login/');
         const url = `${BACKEND_URL}${loginPath}`;
-        console.log('[auth] Login URL:', url);
         
         const response = await axios({
           method: 'post',
@@ -87,7 +84,6 @@ export const authService = {
         });
         
         const data = response.data;
-        console.log('[auth] Login successful:', data);
         
         // Store auth token in localStorage for subsequent requests
         if (data.token) {
@@ -98,7 +94,6 @@ export const authService = {
         
         return data;
       } catch (error: any) {
-        console.error('[auth] Login error details:', error.response?.data || error.message);
         // Clear any partial auth data on error
         localStorage.removeItem('token');
         currentUser = null;
@@ -112,8 +107,6 @@ export const authService = {
         // Generate username from email (use part before @)
         const username = userData.email.split('@')[0];
         
-        console.log('[auth] Registering with username:', username);
-        
         // Match the field names expected by the backend handler
         const registerData = {
           username: username,
@@ -124,12 +117,9 @@ export const authService = {
           last_name: userData.lastName
         };
         
-        console.log('[auth] Registration data:', registerData);
-        
         // Use direct axios call with full URL
         const registerPath = ensureApiPath('/auth/register/');
         const url = `${BACKEND_URL}${registerPath}`;
-        console.log('[auth] Registration URL:', url);
         
         const response = await axios({
           method: 'post',
@@ -141,7 +131,6 @@ export const authService = {
         });
         
         const data = response.data;
-        console.log('[auth] Registration successful:', data);
         
         // Store auth token in localStorage for subsequent requests
         if (data.token) {
@@ -152,7 +141,6 @@ export const authService = {
         
         return data;
       } catch (error: any) {
-        console.error('[auth] Registration error details:', error.response?.data || error.message);
         // Clear any partial auth data on error
         localStorage.removeItem('token');
         currentUser = null;

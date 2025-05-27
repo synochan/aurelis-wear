@@ -53,7 +53,6 @@ const Login = () => {
           navigate('/'); // Redirect to home page after login
         },
         onError: (error: any) => {
-          console.error('Login error:', error);
           setServerError(error.message || 'Failed to log in. Please check your credentials.');
           toast({
             title: 'Error',
