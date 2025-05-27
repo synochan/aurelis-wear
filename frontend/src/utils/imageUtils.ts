@@ -38,13 +38,24 @@ export const getImageUrl = (imageUrl?: string): string => {
   
   let result: string;
   
-  // URLs with protocol - already absolute
+  // URLs with protocol - already absolute, check for duplicate paths
   if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
-    result = trimmedUrl;
+    // Fix duplicate image/upload paths in Cloudinary URLs
+    if (trimmedUrl.includes('cloudinary.com') && 
+        trimmedUrl.includes('image/upload/image/upload/')) {
+      result = trimmedUrl.replace('image/upload/image/upload/', 'image/upload/');
+    } else {
+      result = trimmedUrl;
+    }
   }
   // Cloudinary full URL
   else if (trimmedUrl.includes('cloudinary.com')) {
-    result = trimmedUrl;
+    // Check for duplicate paths here too
+    if (trimmedUrl.includes('image/upload/image/upload/')) {
+      result = trimmedUrl.replace('image/upload/image/upload/', 'image/upload/');
+    } else {
+      result = trimmedUrl;
+    }
   }
   // Cloudinary asset ID format: v1234567890/products/image.jpg
   else if (trimmedUrl.match(/^v\d+\//) || trimmedUrl.includes('/products/')) {
@@ -52,7 +63,11 @@ export const getImageUrl = (imageUrl?: string): string => {
   }
   // Cloudinary path format: image/upload/v1234567890/products/image.jpg
   else if (trimmedUrl.includes('image/upload/')) {
-    result = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/${trimmedUrl}`;
+    // Check for duplicate paths in the path-only format
+    const fixedPath = trimmedUrl.includes('image/upload/image/upload/') 
+      ? trimmedUrl.replace('image/upload/image/upload/', 'image/upload/') 
+      : trimmedUrl;
+    result = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/${fixedPath}`;
   }
   // Public ID only format (direct reference): products/image.jpg
   else if (trimmedUrl.startsWith('products/')) {
