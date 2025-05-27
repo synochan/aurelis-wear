@@ -32,6 +32,14 @@ export interface Order {
   items: OrderItem[];
 }
 
+// Define the paginated response type
+interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
 const getOrders = async (): Promise<Order[]> => {
   console.log('Fetching orders...');
   try {
@@ -39,12 +47,20 @@ const getOrders = async (): Promise<Order[]> => {
     const response = await api.get('/orders/');
     console.log('Orders API response:', response.data);
     
-    if (!response.data || !Array.isArray(response.data)) {
-      console.warn('Orders API returned non-array data:', response.data);
-      return [];
+    // Handle paginated response
+    if (response.data && response.data.results && Array.isArray(response.data.results)) {
+      console.log(`Found ${response.data.results.length} orders in paginated response`);
+      return response.data.results;
+    } 
+    
+    // Handle direct array response (fallback)
+    if (Array.isArray(response.data)) {
+      console.log(`Found ${response.data.length} orders in array response`);
+      return response.data;
     }
     
-    return response.data;
+    console.warn('Orders API returned unexpected data format:', response.data);
+    return [];
   } catch (error: any) {
     console.error('Error fetching orders:', error);
     console.error('Error details:', error.response?.data || error.message);
