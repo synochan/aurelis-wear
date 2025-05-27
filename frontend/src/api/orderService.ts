@@ -19,6 +19,7 @@ export interface OrderItem {
   quantity: number;
   price: number | string;
   image?: string;
+  product_image?: string;
 }
 
 export interface Order {
@@ -52,7 +53,7 @@ const processOrder = (order: Order): Order => {
   if (order.items && Array.isArray(order.items)) {
     order.items = order.items.map(item => ({
       ...item,
-      image: item.image ? getImageUrl(item.image) : undefined
+      image: item.image ? getImageUrl(item.image) : item.product_image ? getImageUrl(item.product_image) : undefined
     }));
   }
   
