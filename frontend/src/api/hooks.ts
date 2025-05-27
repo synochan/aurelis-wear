@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { productService, mapProductFromApi, ProductResponse } from './productService';
 import { authService, LoginCredentials, RegisterData } from './authService';
 import { cartService, CartResponse, AddToCartItem } from './cartService';
+import  orderService  from './orderService';
 import { Product } from '@/components/ProductCard';
 import { CartItem } from '@/context/CartContext';
 
@@ -19,6 +20,10 @@ export const queryKeys = {
   },
   user: {
     profile: ['user', 'profile'] as const,
+  },
+  orders: {
+    all: ['orders'] as const,
+    details: (id: number) => ['orders', id] as const,
   },
 };
 
@@ -253,5 +258,48 @@ export const useClearCart = () => {
     }
   });
 };
+
+// Order Hooks
+export function useOrders() {
+  return useQuery({
+    queryKey: queryKeys.orders.all,
+    queryFn: async () => {
+      try {
+        if (!authService.isAuthenticated()) {
+          return [];
+        }
+        return await orderService.getOrders();
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        return [];
+      }
+    },
+    staleTime: 60000, // 1 minute
+    retry: 1,
+    refetchOnWindowFocus: false,
+    enabled: authService.isAuthenticated(),
+  });
+}
+
+export function useOrderDetails(id: number) {
+  return useQuery({
+    queryKey: queryKeys.orders.details(id),
+    queryFn: async () => {
+      try {
+        if (!id || !authService.isAuthenticated()) {
+          throw new Error("Order ID is missing or user is not authenticated");
+        }
+        return await orderService.getOrderById(id);
+      } catch (error) {
+        console.error(`Error fetching order #${id}:`, error);
+        throw error;
+      }
+    },
+    staleTime: 60000, // 1 minute
+    retry: 1,
+    refetchOnWindowFocus: false,
+    enabled: !!id && authService.isAuthenticated(),
+  });
+}
 
 // Add other hooks for cart, etc. as needed

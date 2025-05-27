@@ -17,13 +17,13 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
   subtitle = "Discover the best of our collection"
 }) => {
   // Try to get featured products first
-  const { data: featuredProducts = [], isLoading: isFeaturedLoading } = useFeaturedProducts();
+  const { data: featuredProducts = [], isLoading: isFeaturedLoading, error: featuredError } = useFeaturedProducts();
   
   // As a fallback, get regular products
   const { data: allProducts = [], isLoading: isAllLoading } = useProducts({ limit: '4' });
   
   // Combine data
-  const products = featuredProducts.length > 0 ? featuredProducts : allProducts;
+  const products = featuredProducts && featuredProducts.length > 0 ? featuredProducts : allProducts;
   const isLoading = isFeaturedLoading || isAllLoading;
   
   const { toast } = useToast();

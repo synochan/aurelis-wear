@@ -1,40 +1,53 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { api } from '@/api';
+import { useOrderDetails } from '@/api';
 import { formatCurrency } from '@/utils/formatters';
 
 const OrderConfirmation = () => {
   const { orderId } = useParams<{ orderId: string }>();
-  const [orderDetails, setOrderDetails] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const orderIdNumber = orderId ? parseInt(orderId, 10) : 0;
+  
+  // Use the new hook to fetch order details
+  const { 
+    data: orderDetails, 
+    isLoading, 
+    error 
+  } = useOrderDetails(orderIdNumber);
 
-  useEffect(() => {
-    const fetchOrderDetails = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get(`/orders/${orderId}/`);
-        setOrderDetails(response.data);
-      } catch (error) {
-        console.error('Error fetching order details:', error);
-        setError('Failed to load order details');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (orderId) {
-      fetchOrderDetails();
+  // Format date to relative time
+  const formatOrderDate = (dateString: string) => {
+    if (!dateString) return '';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    
+    // Calculate time difference in milliseconds
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return 'Today';
+    } else if (diffDays === 1) {
+      return 'Yesterday';
+    } else if (diffDays < 7) {
+      return `${diffDays} days ago`;
+    } else if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+    } else {
+      const months = Math.floor(diffDays / 30);
+      return `${months} ${months === 1 ? 'month' : 'months'} ago`;
     }
-  }, [orderId]);
+  };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="container mx-auto py-16 px-4 max-w-4xl text-center">
-        <p>Loading order details...</p>
+        <Loader2 className="h-8 w-8 animate-spin text-aurelis mx-auto" />
+        <p className="mt-4">Loading order details...</p>
       </div>
     );
   }
@@ -47,7 +60,7 @@ const OrderConfirmation = () => {
             <CardTitle className="text-red-500">Error</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>{error}</p>
+            <p>Failed to load order details</p>
             <Button asChild className="mt-4">
               <Link to="/orders">View All Orders</Link>
             </Button>
@@ -57,38 +70,21 @@ const OrderConfirmation = () => {
     );
   }
 
-  const renderPrice = (value: any) => {
-    if (value === undefined || value === null) return '$0.00';
-    const price = parseFloat(value);
-    return isNaN(price) ? '$0.00' : `$${price.toFixed(2)}`;
-  };
-
   // Calculate subtotal from items if available
   const calculateSubtotal = () => {
     if (!orderDetails?.items?.length) return 0;
     return orderDetails.items.reduce((sum: number, item: any) => {
-      const price = parseFloat(item.price) || 0;
+      const price = parseFloat(item.price.toString()) || 0;
       const quantity = item.quantity || 0;
       return sum + (price * quantity);
     }, 0);
   };
 
-  // Helper to format currency
-  const formatPeso = (amount: number) => formatCurrency(amount);
-
   // Use backend values if present and > 0, otherwise calculate
-  const subtotal = orderDetails?.subtotal && orderDetails.subtotal > 0
-    ? orderDetails.subtotal
-    : calculateSubtotal();
-  const shippingCost = orderDetails?.shipping_price !== undefined && orderDetails.shipping_price !== null
-    ? orderDetails.shipping_price
-    : 0;
-  const tax = orderDetails?.tax !== undefined && orderDetails.tax !== null
-    ? orderDetails.tax
-    : subtotal * 0.08;
-  const total = orderDetails?.total_price && orderDetails.total_price > 0
-    ? orderDetails.total_price
-    : subtotal + shippingCost + tax;
+  const subtotal = calculateSubtotal();
+  const shippingCost = orderDetails?.shipping_price || 0;
+  const tax = subtotal * 0.08; // Estimate tax as 8% of subtotal
+  const total = orderDetails?.total_price || (subtotal + shippingCost + tax);
 
   return (
     <div className="container mx-auto py-16 px-4 max-w-4xl">
@@ -107,6 +103,11 @@ const OrderConfirmation = () => {
             <p className="font-medium mt-2">
               Order Number: #{orderId}
             </p>
+            {orderDetails?.created_at && (
+              <p className="text-sm text-gray-500 mt-1">
+                Placed {formatOrderDate(orderDetails.created_at)}
+              </p>
+            )}
           </div>
           
           {orderDetails && (
@@ -114,13 +115,14 @@ const OrderConfirmation = () => {
               <h3 className="font-semibold border-b pb-2">Order Summary</h3>
               
               <div className="space-y-2">
-                {orderDetails.items?.map((item: any) => (
+                {orderDetails.items?.map((item) => (
                   <div key={item.id} className="flex justify-between">
                     <span>
-                      {item.product_name || 'Product'} {item.size_value && `(${item.size_value})`} 
-                      {item.color_value && `- ${item.color_value}`} x{item.quantity}
+                      {item.product_name || 'Product'} 
+                      {item.size?.name && `(${item.size.name})`} 
+                      {item.color?.name && `- ${item.color.name}`} x{item.quantity}
                     </span>
-                    <span className="font-medium">{renderPrice(item.price)}</span>
+                    <span className="font-medium">{formatCurrency(parseFloat(item.price.toString()))}</span>
                   </div>
                 ))}
               </div>
@@ -128,19 +130,19 @@ const OrderConfirmation = () => {
               <div className="border-t pt-4 mt-4">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
-                  <span>{formatPeso(subtotal)}</span>
+                  <span>{formatCurrency(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping:</span>
-                  <span>{formatPeso(shippingCost)}</span>
+                  <span>{formatCurrency(shippingCost)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax:</span>
-                  <span>{formatPeso(tax)}</span>
+                  <span>{formatCurrency(tax)}</span>
                 </div>
                 <div className="flex justify-between font-bold mt-2 pt-2 border-t">
                   <span>Total:</span>
-                  <span>{formatPeso(total)}</span>
+                  <span>{formatCurrency(total)}</span>
                 </div>
               </div>
               

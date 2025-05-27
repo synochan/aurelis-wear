@@ -1,56 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, ChevronRight, ShoppingBag } from 'lucide-react';
-import { useCurrentUser, api } from '@/api';
-import { formatDistanceToNow } from 'date-fns';
+import { useCurrentUser, useOrders } from '@/api';
 import { toast } from '@/components/ui/use-toast';
 import { formatCurrency } from '@/utils/formatters';
-
-interface Order {
-  id: number;
-  status: string;
-  created_at: string;
-  total_price: number;
-  items: Array<{
-    id: number;
-    product_name: string;
-    quantity: number;
-    image?: string;
-  }>;
-}
 
 const Orders = () => {
   const navigate = useNavigate();
   const { data: user, isLoading: userLoading } = useCurrentUser();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: orders = [], isLoading: ordersLoading, error } = useOrders();
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        setIsLoading(true);
-        const response = await api.get('/orders/');
-        setOrders(response.data);
-      } catch (error) {
-        console.error('Error fetching orders:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load your orders. Please try again.',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (user) {
-      fetchOrders();
-    }
-  }, [user]);
+  // Handle errors
+  if (error) {
+    toast({
+      title: 'Error',
+      description: 'Failed to load your orders. Please try again.',
+      variant: 'destructive',
+    });
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -73,6 +43,30 @@ const Orders = () => {
     navigate(`/order-confirmation/${orderId}`);
   };
 
+  // Format date to relative time
+  const formatOrderDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    
+    // Calculate time difference in milliseconds
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return 'Today';
+    } else if (diffDays === 1) {
+      return 'Yesterday';
+    } else if (diffDays < 7) {
+      return `${diffDays} days ago`;
+    } else if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+    } else {
+      const months = Math.floor(diffDays / 30);
+      return `${months} ${months === 1 ? 'month' : 'months'} ago`;
+    }
+  };
+
   // Helper to process image URLs (copied from ProductCard)
   const getImageUrl = (imageUrl: string) => {
     if (!imageUrl) return "/placeholder.svg";
@@ -88,7 +82,7 @@ const Orders = () => {
     return imageUrl;
   };
 
-  if (userLoading || isLoading) {
+  if (userLoading || ordersLoading) {
     return (
       <div className="container mx-auto py-16 flex justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-aurelis" />
@@ -99,12 +93,6 @@ const Orders = () => {
   return (
     <div className="container mx-auto px-4 py-16 max-w-4xl">
       <h1 className="text-3xl font-bold mb-8">My Orders</h1>
-      
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
       
       <Card>
         <CardHeader>
@@ -123,12 +111,12 @@ const Orders = () => {
                     <div>
                       <div className="flex items-center space-x-2">
                         <h3 className="font-semibold">Order #{order.id}</h3>
-                        <Badge className={getStatusColor(order.status)}>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                           {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                        </Badge>
+                        </span>
                       </div>
                       <p className="text-sm text-gray-500 mt-1">
-                        Placed {formatDistanceToNow(new Date(order.created_at), { addSuffix: true })}
+                        Placed {formatOrderDate(order.created_at)}
                       </p>
                     </div>
                     <div className="font-semibold mt-2 md:mt-0">
