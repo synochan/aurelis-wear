@@ -1,5 +1,6 @@
 import api from './config';
 import { authService } from './authService';
+import { getImageUrl } from '@/utils/imageUtils';
 
 // Define types
 export interface OrderItem {
@@ -42,6 +43,23 @@ interface PaginatedResponse<T> {
 }
 
 /**
+ * Process order data to ensure all fields are properly formatted
+ * @param order The order to process
+ * @returns The processed order with proper image URLs
+ */
+const processOrder = (order: Order): Order => {
+  // Process item images if available
+  if (order.items && Array.isArray(order.items)) {
+    order.items = order.items.map(item => ({
+      ...item,
+      image: item.image ? getImageUrl(item.image) : undefined
+    }));
+  }
+  
+  return order;
+};
+
+/**
  * Fetches all orders for the current user, handling pagination if needed
  */
 const getOrders = async (): Promise<Order[]> => {
@@ -68,9 +86,10 @@ const getOrders = async (): Promise<Order[]> => {
       
       // Handle paginated response
       if (response.data && response.data.results && Array.isArray(response.data.results)) {
-        // Add this page's results to our collection
-        allOrders = [...allOrders, ...response.data.results];
-        console.log(`Added ${response.data.results.length} orders from page`);
+        // Process and add this page's results to our collection
+        const processedOrders = response.data.results.map(processOrder);
+        allOrders = [...allOrders, ...processedOrders];
+        console.log(`Added ${processedOrders.length} orders from page`);
         
         // Set up next page URL if available
         nextPageUrl = response.data.next;
@@ -87,8 +106,9 @@ const getOrders = async (): Promise<Order[]> => {
         }
       } else if (Array.isArray(response.data)) {
         // Handle direct array response (fallback)
-        allOrders = [...allOrders, ...response.data];
-        console.log(`Added ${response.data.length} orders from non-paginated response`);
+        const processedOrders = response.data.map(processOrder);
+        allOrders = [...allOrders, ...processedOrders];
+        console.log(`Added ${processedOrders.length} orders from non-paginated response`);
         nextPageUrl = null; // No more pages
       } else {
         console.warn('Orders API returned unexpected data format:', response.data);
@@ -118,7 +138,9 @@ const getOrderById = async (orderId: number): Promise<Order> => {
     // Don't add /api/ prefix - it's already added by the API client
     const response = await api.get(`/orders/${orderId}/`);
     console.log(`Order #${orderId} API response:`, response.data);
-    return response.data;
+    
+    // Process the order data before returning
+    return processOrder(response.data);
   } catch (error: any) {
     console.error(`Error fetching order #${orderId}:`, error);
     console.error('Error details:', error.response?.data || error.message);

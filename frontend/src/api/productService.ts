@@ -1,38 +1,7 @@
 import { apiClient } from './client';
 import { Product } from '@/components/ProductCard';
 import { formatCurrency } from '@/utils/formatters';
-
-// Helper function to process image URLs
-const processImageUrl = (imageUrl: string): string => {
-  if (!imageUrl) return "";
-  
-  // If it's already an absolute URL, return as is
-  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-    return imageUrl;
-  }
-  
-  // If it starts with 'image/upload/', just prepend the domain
-  if (imageUrl.startsWith('image/upload/')) {
-    return `https://res.cloudinary.com/dr5mrez5h/${imageUrl}`;
-  }
-  
-  // If it starts with 'v' (Cloudinary versioned path), prepend the full Cloudinary URL
-  if (imageUrl.startsWith('v')) {
-    return `https://res.cloudinary.com/dr5mrez5h/image/upload/${imageUrl}`;
-  }
-  
-  // If it contains 'products/', assume it's a Cloudinary path and prepend as above
-  if (imageUrl.includes('products/')) {
-    return `https://res.cloudinary.com/dr5mrez5h/image/upload/${imageUrl}`;
-  }
-  
-  // Otherwise, treat as a relative path
-  if (!imageUrl.startsWith('/')) {
-    return `/${imageUrl}`;
-  }
-  
-  return imageUrl;
-};
+import { getImageUrl } from '@/utils/imageUtils';
 
 // Helper function to format price as Philippine Peso
 export const formatPrice = (price: number): string => {
@@ -153,7 +122,7 @@ export const mapProductFromApi = (apiProduct: ProductResponse): Product => {
   }
   
   // Process the main image
-  const mainImage = processImageUrl(apiProduct.image);
+  const mainImage = getImageUrl(apiProduct.image);
   
   // Process the array of images if present
   let processedStringImages: string[] = [];
@@ -163,11 +132,11 @@ export const mapProductFromApi = (apiProduct: ProductResponse): Product => {
     // Sort the images into appropriate arrays based on type
     apiProduct.images.forEach(img => {
       if (typeof img === 'string') {
-        processedStringImages.push(processImageUrl(img));
+        processedStringImages.push(getImageUrl(img));
       } else if (img && typeof img === 'object' && 'image' in img) {
         processedObjectImages.push({
           ...img,
-          image: processImageUrl(img.image)
+          image: getImageUrl(img.image)
         });
       }
     });

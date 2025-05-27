@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useOrderDetails } from '@/api';
 import { formatCurrency } from '@/utils/formatters';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 const OrderConfirmation = () => {
   const { orderId } = useParams<{ orderId: string }>();
@@ -114,14 +115,26 @@ const OrderConfirmation = () => {
             <div className="space-y-4">
               <h3 className="font-semibold border-b pb-2">Order Summary</h3>
               
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {orderDetails.items?.map((item) => (
-                  <div key={item.id} className="flex justify-between">
-                    <span>
-                      {item.product_name || 'Product'} 
-                      {item.size?.name && `(${item.size.name})`} 
-                      {item.color?.name && `- ${item.color.name}`} x{item.quantity}
-                    </span>
+                  <div key={item.id} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={getImageUrl(item.image)}
+                        alt={item.product_name}
+                        className="w-12 h-12 object-cover rounded-md bg-gray-100"
+                        onError={handleImageError}
+                        loading="lazy"
+                      />
+                      <div>
+                        <div>{item.product_name}</div>
+                        <div className="text-sm text-gray-500">
+                          {item.size?.name && `Size: ${item.size.name}`} 
+                          {item.color?.name && ` | Color: ${item.color.name}`}
+                          {` | Qty: ${item.quantity}`}
+                        </div>
+                      </div>
+                    </div>
                     <span className="font-medium">{formatCurrency(parseFloat(item.price.toString()))}</span>
                   </div>
                 ))}

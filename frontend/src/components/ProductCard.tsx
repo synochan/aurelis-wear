@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/utils/formatters';
+import { getBestProductImage, handleImageError } from '@/utils/imageUtils';
 
 export interface Product {
   id: number;
@@ -45,75 +46,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       return "₱0.00";
     }
   };
-
-  // Process image URL to ensure it works correctly
-  const getImageUrl = (imageUrl: string) => {
-    if (!imageUrl) return "/placeholder.svg";
-    
-    // If it's already an absolute URL (starts with http or https), use it as is
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return imageUrl;
-    }
-    
-    // If it's a Cloudinary URL or ID
-    if (imageUrl.includes('cloudinary.com')) {
-      return imageUrl;
-    } else if (imageUrl.includes('image/upload/') || imageUrl.includes('products/')) {
-      return `https://res.cloudinary.com/dr5mrez5h/image/upload/${imageUrl}`;
-    }
-    
-    // Handle case where image might be a full path without domain
-    if (imageUrl.startsWith('/media/')) {
-      const baseUrl = process.env.REACT_APP_API_URL || '';
-      return `${baseUrl}${imageUrl}`;
-    }
-    
-    // If it's a relative path without a leading slash, add one
-    if (!imageUrl.startsWith('/')) {
-      return `/${imageUrl}`;
-    }
-    
-    return imageUrl;
-  };
-  
-  // Find the best image to display
-  const getBestImage = () => {
-    // If product has an array of images, try to find a primary one
-    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-      // Check for primary image if objects
-      const primaryImage = product.images.find(img => 
-        typeof img === 'object' && 'is_primary' in img && img.is_primary
-      );
-      
-      if (primaryImage && typeof primaryImage === 'object' && 'image' in primaryImage) {
-        return getImageUrl(primaryImage.image);
-      }
-      
-      // If no primary, use first image
-      const firstImage = product.images[0];
-      if (typeof firstImage === 'string') {
-        return getImageUrl(firstImage);
-      } else if (typeof firstImage === 'object' && 'image' in firstImage) {
-        return getImageUrl(firstImage.image);
-      }
-    }
-    
-    // Fall back to the main image field
-    return getImageUrl(product.image);
-  };
   
   return (
     <Card className="border-none overflow-hidden group hover-scale">
       <Link to={`/product/${product.id}`} className="block">
         <div className="relative aspect-square overflow-hidden bg-gray-100">
           <img 
-            src={getBestImage()} 
+            src={getBestProductImage(product)} 
             alt={product.name}
             className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = "/placeholder.svg";
-            }}
+            onError={handleImageError}
+            loading="lazy"
           />
           
           {/* Wishlist button */}

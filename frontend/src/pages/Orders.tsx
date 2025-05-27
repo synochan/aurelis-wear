@@ -7,6 +7,7 @@ import { Loader2, ChevronRight, ShoppingBag } from 'lucide-react';
 import { useCurrentUser, useOrders, authService } from '@/api';
 import { toast } from '@/components/ui/use-toast';
 import { formatCurrency } from '@/utils/formatters';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 const Orders = () => {
   const navigate = useNavigate();
@@ -77,20 +78,7 @@ const Orders = () => {
     }
   };
 
-  // Helper to process image URLs (copied from ProductCard)
-  const getImageUrl = (imageUrl: string) => {
-    if (!imageUrl) return "/placeholder.svg";
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return imageUrl;
-    }
-    if (imageUrl.includes('image/upload/') || imageUrl.includes('products/')) {
-      return `https://res.cloudinary.com/dr5mrez5h/image/upload/${imageUrl}`;
-    }
-    if (!imageUrl.startsWith('/')) {
-      return `/${imageUrl}`;
-    }
-    return imageUrl;
-  };
+
 
   if (userLoading || ordersLoading) {
     return (
@@ -138,10 +126,11 @@ const Orders = () => {
                     {order.items.slice(0, 2).map((item) => (
                       <div key={item.id} className="flex items-center gap-3 mb-2">
                         <img
-                          src={getImageUrl(item.image || "")}
+                          src={getImageUrl(item.image)}
                           alt={item.product_name}
                           className="w-12 h-12 object-cover rounded bg-gray-100 border"
-                          onError={e => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
+                          onError={handleImageError}
+                          loading="lazy"
                         />
                         <span className="flex-1">{item.product_name}</span>
                         <span>x{item.quantity}</span>
