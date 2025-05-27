@@ -18,6 +18,7 @@ import { useProductDetails } from '@/api';
 import { useToast } from '@/hooks/use-toast';
 import { Product } from '@/components/ProductCard';
 import { formatCurrency } from '@/utils/formatters';
+import { getImageUrl } from '@/utils/imageUtils';
 
 // Type for our internal color representation
 interface ColorInfo {
@@ -44,28 +45,6 @@ const ProductDetail = () => {
   const [selectedColorId, setSelectedColorId] = useState<number | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
-  
-  // Process image URL to ensure it works correctly
-  const getImageUrl = (imageUrl: string) => {
-    if (!imageUrl) return "";
-    
-    // If it's already an absolute URL (starts with http or https), use it as is
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return imageUrl;
-    }
-    
-    // If it's a Cloudinary ID, construct the URL
-    if (imageUrl.includes('image/upload/') || imageUrl.includes('products/')) {
-      return `https://res.cloudinary.com/dr5mrez5h/image/upload/${imageUrl}`;
-    }
-    
-    // If it's a relative path without a leading slash, add one
-    if (!imageUrl.startsWith('/')) {
-      return `/${imageUrl}`;
-    }
-    
-    return imageUrl;
-  };
   
   // Process all data from product in a consistent order of hooks
   // 1. Colors normalization
@@ -245,7 +224,7 @@ const ProductDetail = () => {
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
+                    target.src = '/product-placeholder.svg';
                   }}
                 />
               )}
@@ -263,7 +242,7 @@ const ProductDetail = () => {
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
+                      target.src = '/product-placeholder.svg';
                     }}
                   />
                 </div>

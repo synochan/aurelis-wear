@@ -159,6 +159,11 @@ export const handleImageError = (event: React.SyntheticEvent<HTMLImageElement, E
   // Only replace if not already using placeholder
   if (!target.src.includes('placeholder')) {
     console.warn(`Image failed to load: ${target.src}. Using placeholder.`);
+    
+    // Preserve original size and styling
+    target.style.opacity = '1';
+    
+    // Set placeholder image
     target.src = DEFAULT_PLACEHOLDER;
   }
 };

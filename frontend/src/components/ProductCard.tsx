@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Heart } from 'lucide-react';
+import { Heart, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/utils/formatters';
 import { getBestProductImage, handleImageError } from '@/utils/imageUtils';
@@ -30,6 +30,7 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [hasImageError, setHasImageError] = useState(false);
   
   // Ensure price is a number
   const numericPrice = typeof product.price === 'number' ? product.price : parseFloat(String(product.price)) || 0;
@@ -53,24 +54,39 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const handleImageLoadError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     handleImageError(e);
     setIsImageLoaded(true); // Still set as loaded to remove loading state
+    setHasImageError(true); // Mark that we had an error
+    
+    // Log the error to help with debugging
+    console.error(`ProductCard image error for product ${product.id} (${product.name})`, e);
   };
   
   return (
     <Card className="border-none overflow-hidden group hover-scale">
       <Link to={`/product/${product.id}`} className="block">
-        <div className="relative aspect-square overflow-hidden bg-gray-100">
+        <div className="relative aspect-square overflow-hidden bg-gray-100 rounded-md">
+          {/* Main product image */}
           <img 
             src={getBestProductImage(product)} 
             alt={product.name}
-            className={`h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            className={`h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105 ${isImageLoaded && !hasImageError ? 'opacity-100' : 'opacity-0'}`}
             onError={handleImageLoadError}
             onLoad={() => setIsImageLoaded(true)}
             loading="lazy"
           />
           
+          {/* Placeholder display for error cases - styled like ProductDetail */}
+          {hasImageError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100">
+              <ImageIcon className="h-12 w-12 text-gray-400 mb-2" />
+              <div className="text-sm text-gray-500">No Image</div>
+            </div>
+          )}
+          
           {/* Loading skeleton (shows until image loads) */}
           {!isImageLoaded && (
-            <div className="absolute inset-0 bg-gray-100 animate-pulse"></div>
+            <div className="absolute inset-0 bg-gray-100 animate-pulse flex items-center justify-center">
+              <div className="w-8 h-8 border-2 border-gray-200 border-t-aurelis rounded-full animate-spin"></div>
+            </div>
           )}
           
           {/* Wishlist button */}
